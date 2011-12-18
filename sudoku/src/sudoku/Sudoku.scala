@@ -1,8 +1,16 @@
 package sudoku
 
 import scala.annotation.tailrec
+import scala.collection.mutable.Publisher
 
-class SudokuSolver(puzzle: SudokuPuzzle) extends SudokuLog {
+trait SudokuSolverEvent
+case class CicleEvent(puzzle: SudokuPuzzle, cellsSolvedInCicle: Boolean) extends SudokuSolverEvent
+case class GuessValueTryingEvent(guessCell: Cell) extends SudokuSolverEvent
+case class GuessValueFailedEvent(guessCell: Cell) extends SudokuSolverEvent
+
+class SudokuSolver(puzzle: SudokuPuzzle) extends Publisher[SudokuSolverEvent] {
+
+  type Pub <: SudokuSolver
 
   type OptPuzzle = Option[SudokuPuzzle]
 
@@ -17,17 +25,17 @@ class SudokuSolver(puzzle: SudokuPuzzle) extends SudokuLog {
   private def tryGuessValue(pendentCell: Cell, guessValues: List[Int]): OptPuzzle = guessValues match {
     case Nil => None
     case x :: xs => {
-      val copyCell = pendentCell.copy(v = x)
-      val puzzleCopy = puzzle.copyWithGuess(copyCell)
+      val guessCell = pendentCell.copy(v = x, cellType = CellType.Guess)
+      val guessPuzzle = puzzle.copyWithGuess(guessCell)
 
-      assert(!this.puzzle.eq(puzzleCopy))
-      log('\n' + "==== tryGuessValue: %s ====".format(copyCell))
-      log("puzzle.hashCode = " + puzzle.hashCode())
-      log("%s.hashCode = %d".format(copyCell, copyCell.hashCode()))
-
-      new SudokuSolver(puzzleCopy).apply() match {
+      assert(!this.puzzle.eq(guessPuzzle))
+      super.publish(GuessValueTryingEvent(guessCell))
+      new SudokuSolver(guessPuzzle).apply() match {
         case Some(p) => Some(p)
-        case None    => tryGuessValue(pendentCell, xs)
+        case None => {
+          super.publish(GuessValueFailedEvent(guessCell))
+          tryGuessValue(pendentCell, xs)
+        }
       }
     }
   }
@@ -55,6 +63,7 @@ class SudokuSolver(puzzle: SudokuPuzzle) extends SudokuLog {
         val solvedBySector = this.bySectorSolver.solvePuzzle(this.puzzle)
 
         val solved = solvedByCell || solvedByRow || solvedByCol || solvedBySector
+        super.publish(CicleEvent(this.puzzle, solved))
         if (solved) apply()
         else this.tryGuessCells(pendents
           .map(c => new PendentCell(c, this.puzzle))

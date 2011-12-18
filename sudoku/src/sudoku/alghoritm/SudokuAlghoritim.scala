@@ -7,21 +7,22 @@ import sudoku.PendentCell
 import sudoku.SudokuLog
 import sudoku.SudokuPuzzle
 
-trait SudokuAlghoritim extends SudokuLog {
+trait SudokuAlghoritim {
 
   @tailrec
   private def solve(puzzle: SudokuPuzzle, hadOneCicleSolvedAtLeast: Boolean): Boolean = {
     if (puzzle.isSolved) {
       true
     } else {
-      logIteraction(puzzle)
-      SudokuPuzzle.nextIteraction
+      puzzle.nextIteraction
       this.solveCicle(puzzle) match {
         case true  => solve(puzzle, true)
         case false => hadOneCicleSolvedAtLeast
       }
     }
   }
+
+  private def prepareEvaluatedCells(cells: List[Cell], evaluated: Boolean) = cells.foreach(_.evaluated = evaluated)
 
   protected class CellPendenstValues(val cell: Cell, val pendentValues: Seq[Int])
 
@@ -30,7 +31,6 @@ trait SudokuAlghoritim extends SudokuLog {
 
   protected def fillCell(cell: Cell, value: Int) = {
     cell.value = value
-    log(2, cell.toString())
     true
   }
 
@@ -49,24 +49,24 @@ trait SudokuAlghoritim extends SudokuLog {
   }
 
   protected def solveCells(puzzle: SudokuPuzzle, cells: List[Cell]): Boolean = {
+    this.prepareEvaluatedCells(cells, true)
+
     val pendentCells = cells
       .filter(!_.solved)
       .map(c => PendentCell(c, puzzle.getPendentsNumbersFromCell(c)))
       .filter(p => !p.candidates.isEmpty)
 
-    if (pendentCells.isEmpty) false
-    else (1 to 9).map(v => solveCellsForValue(pendentCells, v)).exists(b => b)
+    val result = if (pendentCells.isEmpty) false else (1 to 9).map(v => solveCellsForValue(pendentCells, v)).exists(b => b)
+
+    this.prepareEvaluatedCells(cells, false)
+    result
   }
 
   protected def solveCicle(puzzle: SudokuPuzzle): Boolean
 
   def solvePuzzle(puzzle: SudokuPuzzle): Boolean = {
-    if (puzzle.isSolved) {
-      false
-    } else {
-      log("\n" + "---- %s ----".format(this.getClass.getSimpleName))
-      this.solve(puzzle, false)
-    }
+    if (puzzle.isSolved) false
+    else this.solve(puzzle, false)
   }
 
 }

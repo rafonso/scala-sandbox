@@ -1,21 +1,21 @@
 package sudoku
 
-import scala.annotation.tailrec
-import scala.util.logging.Logged
+import scala.collection.mutable.Publisher
 
-case class SudokuPuzzle(values: Seq[Int], val guessCells: List[Cell] = Nil) {
+trait SudokuPuzzleEvent
+case object SudokuPuzzleIteractionEvent extends SudokuPuzzleEvent
+
+case class SudokuPuzzle(values: Seq[Int], val guessCells: List[Cell] = Nil) extends Publisher[SudokuPuzzleEvent] {
   assert(values.size == 81)
   assert(values.forall(x => x >= 0 && x <= 9))
 
-  private val originalNumbers = (1 to 9)
+  type Pub <: SudokuPuzzle
 
-  private val border = "|---+---+---|";
-
-  private def copyNumbers: Set[Int] = originalNumbers.foldLeft(Set.empty[Int])((set, x) => set + x)
+  private def copyNumbers: Set[Int] = SudokuPuzzle.originalNumbers.foldLeft(Set.empty[Int])((set, x) => set + x)
 
   private def cellsToPendentNumbers(cells: Seq[Cell], cell: Cell): Seq[Int] = cells.filter(_.solved).map(_.value)
 
-  val matrix = values.zipWithIndex.map({ case (v, i) => Cell(i / 9, i % 9, v) }).toList
+  val matrix = values.zipWithIndex.map({ case (v, i) => new Cell(i / 9, i % 9, v) }).toList
 
   def getRow(row: Int) = matrix.filter(_.row == row)
 
@@ -41,7 +41,7 @@ case class SudokuPuzzle(values: Seq[Int], val guessCells: List[Cell] = Nil) {
 
     def rowToString(rowNumber: Int) = {
       val row = this.getRow(rowNumber)
-      "|%d%d%d|%d%d%d|%d%d%d|%n".format(row(0).value, row(1).value, row(2).value, row(3).value, row(4).value,
+      "|%d %d %d|%d %d %d|%d %d %d|%n".format(row(0).value, row(1).value, row(2).value, row(3).value, row(4).value,
         row(5).value, row(6).value, row(7).value, row(8).value)
     }
 
@@ -49,43 +49,50 @@ case class SudokuPuzzle(values: Seq[Int], val guessCells: List[Cell] = Nil) {
     if (!this.guessCells.isEmpty) {
       sbPuzzle.append("Guesses: %s%n".format(this.guessCells.reverse))
     }
-    sbPuzzle append "/---+---+---\\\n"
+    sbPuzzle append SudokuPuzzle.upperBorder
     sbPuzzle append rowToString(0)
     sbPuzzle append rowToString(1)
     sbPuzzle append rowToString(2)
-    sbPuzzle append "|---+---+---|\n"
+    sbPuzzle append SudokuPuzzle.middleBorder
     sbPuzzle append rowToString(3)
     sbPuzzle append rowToString(4)
     sbPuzzle append rowToString(5)
-    sbPuzzle append "|---+---+---|\n"
+    sbPuzzle append SudokuPuzzle.middleBorder
     sbPuzzle append rowToString(6)
     sbPuzzle append rowToString(7)
     sbPuzzle append rowToString(8)
-    sbPuzzle append "\\---+---+---/"
+    sbPuzzle append SudokuPuzzle.lowerBorder
 
     sbPuzzle.toString
   }
 
   def copyWithGuess(guess: Cell) = {
     val copyValues = this.matrix.map(_.value)
+
     val result = new SudokuPuzzle(copyValues, guess :: this.guessCells)
+    
     result.getRow(guess.row).apply(guess.col).value = guess.value
+
     result
+  }
+
+  def nextIteraction {
+    SudokuPuzzle.iteraction += 1
+    super.publish(SudokuPuzzleIteractionEvent)
   }
 
 }
 
 object SudokuPuzzle {
-  
-  var iter = 0
-  
-  def nextIteraction {
-    this.iter += 1
-  }
-  
-  def iteraction = iter
 
-  val originalNumbers = (1 to 9)
+  private val line = "-" * 5
+  private val upperBorder = "/" + line + "+" + line + "+" + line + "\\" + "\n"
+  private val middleBorder = "|" + line + "+" + line + "+" + line + "|" + "\n"
+  private val lowerBorder = "\\" + line + "+" + line + "+" + line + "/"
+
+  private val originalNumbers = (1 to 9)
+
+  private var iteraction = 0
 
   def apply(str: String) = new SudokuPuzzle(str.map(_.toInt - '0'))
 
