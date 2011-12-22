@@ -24,7 +24,8 @@ case class CellEvaluated(evaluated: Boolean) extends CellEvent
  * @param col Cell column
  * @param v Original Value. If 0, it is not solved.
  */
-case class Cell(row: Int, col: Int, var v: Int, val cellType: CellType) extends Publisher[CellEvent] {
+case class Cell(row: Int, col: Int, var v: Int, val cellType: CellType) extends SudokuPublisher[CellEvent] {
+    assume(v >= 0 && v <= 9)
 
   type Pub <: Cell
 

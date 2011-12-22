@@ -32,3 +32,4 @@ _ReSharper*/
 sandbox/.classpath
 sandbox/.manager/*.java
 sandbox/.manager/*.scala
+scala-react/

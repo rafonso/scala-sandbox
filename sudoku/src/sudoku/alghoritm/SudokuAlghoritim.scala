@@ -4,7 +4,6 @@ import scala.annotation.tailrec
 
 import sudoku.Cell
 import sudoku.PendentCell
-import sudoku.SudokuLog
 import sudoku.SudokuPuzzle
 
 trait SudokuAlghoritim {

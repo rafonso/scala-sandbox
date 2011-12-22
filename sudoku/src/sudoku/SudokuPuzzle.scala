@@ -1,13 +1,17 @@
 package sudoku
 
 import scala.collection.mutable.Publisher
+import scala.collection.mutable.HashMap
+import scala.collection.mutable.MultiMap
+import scala.collection.mutable.Set
 
 trait SudokuPuzzleEvent
 case object SudokuPuzzleIteractionEvent extends SudokuPuzzleEvent
 
-case class SudokuPuzzle(values: Seq[Int], val guessCells: List[Cell] = Nil) extends Publisher[SudokuPuzzleEvent] {
-  assert(values.size == 81)
-  assert(values.forall(x => x >= 0 && x <= 9))
+case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil) extends SudokuPublisher[SudokuPuzzleEvent] {
+  assert(matrix.size == 81)
+
+  def this(values: Seq[Int]) = this(values.zipWithIndex.map({ case (v, i) => new Cell(i / 9, i % 9, v) }).toList, Nil)
 
   type Pub <: SudokuPuzzle
 
@@ -15,7 +19,7 @@ case class SudokuPuzzle(values: Seq[Int], val guessCells: List[Cell] = Nil) exte
 
   private def cellsToPendentNumbers(cells: Seq[Cell], cell: Cell): Seq[Int] = cells.filter(_.solved).map(_.value)
 
-  val matrix = values.zipWithIndex.map({ case (v, i) => new Cell(i / 9, i % 9, v) }).toList
+  //  val matrix = values.zipWithIndex.map({ case (v, i) => new Cell(i / 9, i % 9, v) }).toList
 
   def getRow(row: Int) = matrix.filter(_.row == row)
 
@@ -67,10 +71,18 @@ case class SudokuPuzzle(values: Seq[Int], val guessCells: List[Cell] = Nil) exte
   }
 
   def copyWithGuess(guess: Cell) = {
-    val copyValues = this.matrix.map(_.value)
 
-    val result = new SudokuPuzzle(copyValues, guess :: this.guessCells)
-    
+    def copyCell(c: Cell) = {
+      val newCell = Cell(c.row, c.col, c.value, c.cellType)
+      newCell.addFilters(c.getFilters.asInstanceOf[scala.collection.mutable.HashMap[newCell.Sub, scala.collection.mutable.Set[sudoku.CellEvent => Boolean]] with scala.collection.mutable.MultiMap[newCell.Sub, sudoku.CellEvent => Boolean]])
+
+      newCell
+    }
+
+    val copyCells = this.matrix.map(copyCell _)
+    val result = new SudokuPuzzle(copyCells, guess :: this.guessCells)
+    result.addFilters(this.getFilters.asInstanceOf[HashMap[result.Sub, Set[SudokuPuzzleEvent => Boolean]] with MultiMap[result.Sub, sudoku.SudokuPuzzleEvent => Boolean]])
+
     result.getRow(guess.row).apply(guess.col).value = guess.value
 
     result

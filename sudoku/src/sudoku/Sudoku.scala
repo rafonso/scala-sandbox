@@ -8,7 +8,7 @@ case class CicleEvent(puzzle: SudokuPuzzle, cellsSolvedInCicle: Boolean) extends
 case class GuessValueTryingEvent(guessCell: Cell) extends SudokuSolverEvent
 case class GuessValueFailedEvent(guessCell: Cell) extends SudokuSolverEvent
 
-class SudokuSolver(puzzle: SudokuPuzzle) extends Publisher[SudokuSolverEvent] {
+class SudokuSolver(puzzle: SudokuPuzzle) extends SudokuPublisher[SudokuSolverEvent] {
 
   type Pub <: SudokuSolver
 
