@@ -3,12 +3,12 @@ package sudoku
 import scala.annotation.tailrec
 import scala.collection.mutable.Publisher
 
-trait SudokuSolverEvent
+trait SudokuSolverEvent extends SudokuEvent
 case class CicleEvent(puzzle: SudokuPuzzle, cellsSolvedInCicle: Boolean) extends SudokuSolverEvent
 case class GuessValueTryingEvent(guessCell: Cell) extends SudokuSolverEvent
 case class GuessValueFailedEvent(guessCell: Cell) extends SudokuSolverEvent
 
-class SudokuSolver(puzzle: SudokuPuzzle) extends SudokuPublisher[SudokuSolverEvent] {
+class SudokuSolver(puzzle: SudokuPuzzle) extends SudokuType with SudokuPublisher[SudokuSolverEvent] {
 
   type Pub <: SudokuSolver
 

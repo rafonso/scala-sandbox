@@ -14,7 +14,7 @@ import CellType._
 /**
  *
  */
-trait CellEvent
+trait CellEvent extends SudokuEvent
 case object CellValueChanged extends CellEvent
 case class CellEvaluated(evaluated: Boolean) extends CellEvent
 
@@ -24,7 +24,7 @@ case class CellEvaluated(evaluated: Boolean) extends CellEvent
  * @param col Cell column
  * @param v Original Value. If 0, it is not solved.
  */
-case class Cell(row: Int, col: Int, var v: Int, val cellType: CellType) extends SudokuPublisher[CellEvent] {
+case class Cell(row: Int, col: Int, var v: Int, val cellType: CellType) extends SudokuType with SudokuPublisher[CellEvent] {
     assume(v >= 0 && v <= 9)
 
   type Pub <: Cell

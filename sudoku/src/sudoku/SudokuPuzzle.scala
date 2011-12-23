@@ -5,10 +5,10 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.MultiMap
 import scala.collection.mutable.Set
 
-trait SudokuPuzzleEvent
+trait SudokuPuzzleEvent extends SudokuEvent
 case object SudokuPuzzleIteractionEvent extends SudokuPuzzleEvent
 
-case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil) extends SudokuPublisher[SudokuPuzzleEvent] {
+case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil) extends SudokuType with SudokuPublisher[SudokuPuzzleEvent] {
   assert(matrix.size == 81)
 
   def this(values: Seq[Int]) = this(values.zipWithIndex.map({ case (v, i) => new Cell(i / 9, i % 9, v) }).toList, Nil)
