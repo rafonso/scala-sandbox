@@ -72,16 +72,18 @@ case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil
 
   def copyWithGuess(guess: Cell) = {
 
+    import SudokuPublisher._
+
     def copyCell(c: Cell) = {
       val newCell = Cell(c.row, c.col, c.value, c.cellType)
-      newCell.addFilters(c.getFilters.asInstanceOf[scala.collection.mutable.HashMap[newCell.Sub, scala.collection.mutable.Set[sudoku.CellEvent => Boolean]] with scala.collection.mutable.MultiMap[newCell.Sub, sudoku.CellEvent => Boolean]])
+      newCell.addFilters(c.getFilters.asInstanceOf[Mapa[newCell.Sub, CellEvent]])
 
       newCell
     }
 
     val copyCells = this.matrix.map(copyCell _)
     val result = new SudokuPuzzle(copyCells, guess :: this.guessCells)
-    result.addFilters(this.getFilters.asInstanceOf[HashMap[result.Sub, Set[SudokuPuzzleEvent => Boolean]] with MultiMap[result.Sub, sudoku.SudokuPuzzleEvent => Boolean]])
+    result.addFilters(this.getFilters.asInstanceOf[Mapa[result.Sub, SudokuPuzzleEvent]])
 
     result.getRow(guess.row).apply(guess.col).value = guess.value
 
@@ -109,4 +111,3 @@ object SudokuPuzzle {
   def apply(str: String) = new SudokuPuzzle(str.map(_.toInt - '0'))
 
 }
-

@@ -18,12 +18,12 @@ trait SudokuPublisher[Evt] extends Publisher[Evt] {
 
   def getSuspendeds = this.interceptSuspended
 
-  def addFilters(filters: HashMap[Sub, Set[Filter]] with MultiMap[Sub, Filter]) {
-    filters.foreach({ case (sub, filters) => filters.foreach(super.subscribe(sub, _)) })
+  def addFilters(filters: SudokuPublisher.Mapa[Sub, Evt]) {
+    filters.foreach({ case (sub, filters) => filters.foreach(this.subscribe(sub, _)) })
   }
 
   def addSuspendeds(suspendeds: HashSet[Sub]) {
-    suspendeds.foreach(super.suspendSubscription(_))
+    suspendeds.foreach(this.suspendSubscription(_))
   }
 
   override def subscribe(sub: Sub, filter: Filter) {
@@ -52,8 +52,9 @@ trait SudokuPublisher[Evt] extends Publisher[Evt] {
   }
 
 }
-/*
-[C](f: (SudokuPublisher.this.Sub, scala.collection.immutable.Set[Evt => Boolean]) => C)Unit <and>   
-[U](f: (SudokuPublisher.this.Sub, scala.collection.mutable.Set[Evt => Boolean]) with (SudokuPublisher.this.Sub, scala.collection.immutable.Set[Evt => Boolean]) => U)Unit  cannot be applied to (() => Unit)	SudokuPublisher.scala	/sudoku/src/sudoku	line 23	Scala Problem
 
-*/
+object SudokuPublisher {
+
+  type Mapa[Sub, Evt] = HashMap[Sub, Set[Evt => Boolean]] with MultiMap[Sub, Evt => Boolean]
+
+}
