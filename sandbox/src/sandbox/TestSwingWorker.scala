@@ -5,27 +5,91 @@ import swing.event._
 import GridBagPanel._
 import javax.swing.ImageIcon
 
+abstract class CountWorker(max: Int, actionBeforeCounting: () => Unit, actionAfterIncrement: (Int) => Unit, actionAfterCounting: () => Unit) extends SwingWorker {
+
+  private var t0: Long = 0L
+  protected var run = true
+  protected var count: Int = 0
+
+  protected def prepareCounting {
+    this.actionBeforeCounting()
+
+    println("EXECUÇÃO INICIADA!")
+    t0 = System.currentTimeMillis()
+  }
+
+  protected def increment {
+    this.count += 1
+
+    this.actionAfterIncrement(this.count)
+  }
+
+  protected def countStoped {
+    val deltaT = System.currentTimeMillis() - t0
+    if (this.run) println("EXECUÇÃO CONCLUÍDA: %,7d ms".format(deltaT))
+    else println("EXECUÇÃO INTERROMPIDA EM %,7d: %,7d ms".format(this.count, deltaT))
+
+    this.actionAfterCounting()
+  }
+
+}
+
+class SimpleCountWorker(max: Int, actionBeforeCounting: () => Unit, actionAfterIncrement: (Int) => Unit, actionAfterCounting: () => Unit)
+  extends CountWorker(max, actionBeforeCounting, actionAfterIncrement, actionAfterCounting) {
+
+  def act() {
+    this.prepareCounting
+    loopWhile(count < max && run) {
+
+    } andThen {
+      this.countStoped
+    }
+  }
+}
+
+class ReactCountWorker(max: Int, actionBeforeCounting: () => Unit, actionAfterIncrement: (Int) => Unit, actionAfterCounting: () => Unit)
+  extends CountWorker(max, actionBeforeCounting, actionAfterIncrement, actionAfterCounting) {
+
+  def act() {
+    this.prepareCounting
+    loopWhile(count < max && run) {
+      this.increment
+      receive {
+        case 'stop => run = false
+        case _     =>
+      }
+    } andThen {
+      this.countStoped
+    }
+  }
+}
+
 object TestSwingWorker extends SimpleSwingApplication {
+
+  private val RunTitle = "Run"
+  private val StopTitle = "Stop"
 
   val txfValue = new TextField()
   val txfMax = new TextField("1000")
-  val btnAction = new Button("Run")
+  val btnAction = new Button(RunTitle)
   val btnPause = new Button("Pause")
-  var max: Int = _
-  var value = 0
 
-  val worker = new SwingWorker {
+  var worker: CountWorker = _
 
-    def act() {
-    	
-    }
-
+  private def actionBeforeCounting() {
+    btnAction.text = StopTitle
+    //      btnPause.enabled = true
+    txfMax.editable = false
   }
 
-  private def init {
+  private def actionAfterIncrement(count: Int) {
+    txfValue.text = count.toString()
+  }
 
-    val max = this.txfMax.text.toInt
-
+  private def actionAfterCounting() {
+    btnAction.text = RunTitle
+    //      btnPause.enabled = false
+    txfMax.editable = true
   }
 
   def top = new MainFrame {
@@ -43,6 +107,7 @@ object TestSwingWorker extends SimpleSwingApplication {
       layout(lblValue) = c
 
       txfValue.editable = false
+      txfValue.horizontalAlignment = Alignment.Right
       //      c.anchor = Anchor.West
       c.fill = Fill.Horizontal
       c.gridx = 1;
@@ -56,6 +121,7 @@ object TestSwingWorker extends SimpleSwingApplication {
       c.gridy = 1;
       layout(lblMax) = c
 
+      txfMax.horizontalAlignment = Alignment.Right
       c.fill = Fill.Horizontal
       c.gridx = 1;
       c.gridy = 1;
@@ -84,17 +150,27 @@ object TestSwingWorker extends SimpleSwingApplication {
   }
 
   super.listenTo(btnAction, btnPause)
-  
+
   reactions += {
-    case ButtonClicked(b) if (b == this.btnAction) => {
-      try {
-        this.max = this.txfMax.text.toInt
-        println(max)
-      } catch {
-        case e: NumberFormatException => Dialog.showMessage(
-          message = "Non numeric value: " + this.txfMax.text,
-          messageType = Dialog.Message.Error,
-          title = "Conversion Error")
+    case ButtonClicked(this.btnAction) => {
+      this.btnAction.text match {
+        case RunTitle => {
+          try {
+            // Determino qual worker será utilizad: SimpleCountWorker ou ReactCountWorker. 
+            this.worker = new ReactCountWorker(this.txfMax.text.toInt, this.actionBeforeCounting, this.actionAfterIncrement, this.actionAfterCounting)
+            // Inicia o Loop
+            this.worker.start()
+          } catch {
+            case e: NumberFormatException => Dialog.showMessage(
+              message = "Non numeric value: " + this.txfMax.text,
+              messageType = Dialog.Message.Error,
+              title = "Conversion Error")
+          }
+        }
+        case StopTitle => {
+          // Interrompe o Loop.
+          this.worker ! 'stop
+        }
       }
     }
   }
