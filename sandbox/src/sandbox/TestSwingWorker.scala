@@ -26,8 +26,8 @@ abstract class CountWorker(max: Int, actionBeforeCounting: () => Unit, actionAft
 
   protected def countStoped {
     val deltaT = System.currentTimeMillis() - t0
-    if (this.run) println("EXECUÇÃO CONCLUÍDA: %,7d ms".format(deltaT))
-    else println("EXECUÇÃO INTERROMPIDA EM %,7d: %,7d ms".format(this.count, deltaT))
+    if (super.cancelled) println("EXECUÇÃO INTERROMPIDA EM %,7d: %,7d ms".format(this.count, deltaT))
+    else println("EXECUÇÃO CONCLUÍDA: %,7d ms".format(deltaT))
 
     this.actionAfterCounting()
   }
@@ -39,8 +39,8 @@ class SimpleCountWorker(max: Int, actionBeforeCounting: () => Unit, actionAfterI
 
   def act() {
     this.prepareCounting
-    loopWhile(count < max && run) {
-
+    loopWhile(count < max && !super.cancelled) {
+      this.increment
     } andThen {
       this.countStoped
     }
@@ -52,11 +52,15 @@ class ReactCountWorker(max: Int, actionBeforeCounting: () => Unit, actionAfterIn
 
   def act() {
     this.prepareCounting
+
     loopWhile(count < max && run) {
       this.increment
-      receive {
-        case 'stop => run = false
-        case _     =>
+      react {
+        case 'stop => {
+          run = false
+          this.countStoped
+        }
+        case _ => act()
       }
     } andThen {
       this.countStoped
@@ -157,7 +161,7 @@ object TestSwingWorker extends SimpleSwingApplication {
         case RunTitle => {
           try {
             // Determino qual worker será utilizad: SimpleCountWorker ou ReactCountWorker. 
-            this.worker = new ReactCountWorker(this.txfMax.text.toInt, this.actionBeforeCounting, this.actionAfterIncrement, this.actionAfterCounting)
+            this.worker = new SimpleCountWorker(this.txfMax.text.toInt, this.actionBeforeCounting, this.actionAfterIncrement, this.actionAfterCounting)
             // Inicia o Loop
             this.worker.start()
           } catch {
@@ -169,7 +173,7 @@ object TestSwingWorker extends SimpleSwingApplication {
         }
         case StopTitle => {
           // Interrompe o Loop.
-          this.worker ! 'stop
+          this.worker.cancelled = true
         }
       }
     }

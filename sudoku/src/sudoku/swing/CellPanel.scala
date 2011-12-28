@@ -2,7 +2,6 @@ package sudoku.swing
 
 import java.awt.Color
 import java.awt.Font
-
 import scala.collection.mutable.Subscriber
 import scala.swing.Dialog.Message
 import scala.swing.event.MouseClicked
@@ -10,10 +9,12 @@ import scala.swing.Dialog
 import scala.swing.FlowPanel
 import scala.swing.Label
 import scala.swing.Swing
-
+import sudoku.Cell
 import sudoku.CellEvent
+import sudoku.CellEvaluated
+import sudoku.CellValueChanged
 
-class Cell1(row: Int, col: Int) extends FlowPanel with Subscriber[CellEvent, sudoku.Cell] {
+class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[CellEvent, Cell] {
 
   private val Empty = " "
 
@@ -21,8 +22,10 @@ class Cell1(row: Int, col: Int) extends FlowPanel with Subscriber[CellEvent, sud
   this.label.text = Empty
 
   private val tamanho = 14
-  private val FonteOriginal = new Font(this.label.font.getName(), Font.BOLD, tamanho)
   private val FonteNormal = new Font(this.label.font.getName(), Font.PLAIN, tamanho)
+  private val FonteOriginal = new Font(this.label.font.getName(), Font.BOLD, tamanho)
+  private val FundoNormal = this.background
+  private val FundoAvaliado = Color.BLUE
 
   this.contents += this.label
 
@@ -60,8 +63,15 @@ class Cell1(row: Int, col: Int) extends FlowPanel with Subscriber[CellEvent, sud
   }
 
   def value: Option[Int] = if (this.label.text == Empty) None else Some(this.label.text.toInt)
-  
-  def notify(pub: sudoku.Cell, evt: CellEvent) {
-    
+
+  def notify(pub: Cell, evt: CellEvent) {
+    evt match {
+      case CellEvaluated(true)  => this.background = FundoNormal
+      case CellEvaluated(false) => this.background = FundoAvaliado
+      case CellValueChanged => this.label.text = pub.value match {
+        case Some(v) => v.toString()
+        case None    => Empty
+      }
+    }
   }
 }

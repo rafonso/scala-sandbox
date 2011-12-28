@@ -5,7 +5,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.MultiMap
 import scala.collection.mutable.Set
 
-trait SudokuPuzzleEvent extends SudokuEvent
+sealed trait SudokuPuzzleEvent extends SudokuEvent
 case object SudokuPuzzleIteractionEvent extends SudokuPuzzleEvent
 
 case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil) extends SudokuType with SudokuPublisher[SudokuPuzzleEvent] {

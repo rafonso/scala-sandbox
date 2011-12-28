@@ -3,7 +3,14 @@ package sudoku
 import scala.annotation.tailrec
 import scala.collection.mutable.Publisher
 
-trait SudokuSolverEvent extends SudokuEvent
+/**
+ * Represents a Event that ocurred while solving a Puzzle.
+ */
+sealed trait SudokuSolverEvent extends SudokuEvent
+
+/**
+ * Indicates a event ocurred in 
+ */
 case class CicleEvent(puzzle: SudokuPuzzle, cellsSolvedInCicle: Boolean) extends SudokuSolverEvent
 case class GuessValueTryingEvent(guessCell: Cell) extends SudokuSolverEvent
 case class GuessValueFailedEvent(guessCell: Cell) extends SudokuSolverEvent
