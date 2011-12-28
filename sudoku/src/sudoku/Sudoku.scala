@@ -25,7 +25,7 @@ class SudokuSolver(puzzle: SudokuPuzzle) extends SudokuType with SudokuPublisher
   private def tryGuessValue(pendentCell: Cell, guessValues: List[Int]): OptPuzzle = guessValues match {
     case Nil => None
     case x :: xs => {
-      val guessCell = pendentCell.copy(v = x, cellType = CellType.Guess)
+      val guessCell = pendentCell.copy(v = Some(x), cellType = CellType.Guess)
       val guessPuzzle = puzzle.copyWithGuess(guessCell)
 
       assert(!this.puzzle.eq(guessPuzzle))

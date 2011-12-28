@@ -17,7 +17,7 @@ case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil
 
   private def copyNumbers: Set[Int] = SudokuPuzzle.originalNumbers.foldLeft(Set.empty[Int])((set, x) => set + x)
 
-  private def cellsToPendentNumbers(cells: Seq[Cell], cell: Cell): Seq[Int] = cells.filter(_.solved).map(_.value)
+  private def cellsToPendentNumbers(cells: Seq[Cell], cell: Cell): Seq[Int] = cells.filter(_.solved).map(_.value.get)
 
   //  val matrix = values.zipWithIndex.map({ case (v, i) => new Cell(i / 9, i % 9, v) }).toList
 
@@ -43,10 +43,14 @@ case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil
 
   override def toString = {
 
+    def cellToString(row: List[Cell], col: Int): Any = row(col).value.getOrElse(".")
+
     def rowToString(rowNumber: Int) = {
       val row = this.getRow(rowNumber)
-      "|%d %d %d|%d %d %d|%d %d %d|%n".format(row(0).value, row(1).value, row(2).value, row(3).value, row(4).value,
-        row(5).value, row(6).value, row(7).value, row(8).value)
+      "|%s %s %s|%s %s %s|%s %s %s|%n".format(
+        cellToString(row, 0), cellToString(row, 1), cellToString(row, 2), 
+        cellToString(row, 3), cellToString(row, 4), cellToString(row, 5),
+        cellToString(row, 6), cellToString(row, 7), cellToString(row, 8))
     }
 
     val sbPuzzle = new StringBuilder("Iteraction #%,4d%n".format(SudokuPuzzle.iteraction))
@@ -85,7 +89,7 @@ case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil
     val result = new SudokuPuzzle(copyCells, guess :: this.guessCells)
     result.addFilters(this.getFilters.asInstanceOf[Mapa[result.Sub, SudokuPuzzleEvent]])
 
-    result.getRow(guess.row).apply(guess.col).value = guess.value
+    result.getRow(guess.row).apply(guess.col).value = guess.value.get
 
     result
   }

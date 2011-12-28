@@ -24,8 +24,8 @@ case class CellEvaluated(evaluated: Boolean) extends CellEvent
  * @param col Cell column
  * @param v Original Value. If 0, it is not solved.
  */
-case class Cell(row: Int, col: Int, var v: Int, val cellType: CellType) extends SudokuType with SudokuPublisher[CellEvent] {
-    assume(v >= 0 && v <= 9)
+case class Cell(row: Int, col: Int, var v: Option[Int], val cellType: CellType) extends SudokuType with SudokuPublisher[CellEvent] {
+    if(v.isDefined) assume(v.get >= 0 && v.get <= 9)
 
   type Pub <: Cell
 
@@ -41,9 +41,9 @@ case class Cell(row: Int, col: Int, var v: Int, val cellType: CellType) extends 
    */
   val sector = (row / 3, col / 3)
 
-  def this(row: Int, col: Int, v: Int) = this(row, col, v, if (v > 0) CellType.Original else CellType.Normal)
+  def this(row: Int, col: Int, v: Int) = this(row, col, if (v > 0) Some(v) else None, if (v > 0) CellType.Original else CellType.Normal)
 
-  def solved = (value > 0)
+  def solved = value.isDefined
 
   def value = v
 
@@ -52,7 +52,7 @@ case class Cell(row: Int, col: Int, var v: Int, val cellType: CellType) extends 
     assume(this.cellType == Normal)
     assume(newValue > 0 && newValue <= 9)
 
-    this.v = newValue
+    this.v = Some(newValue)
     publish(CellValueChanged)
   }
 
