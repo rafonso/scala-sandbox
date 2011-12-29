@@ -5,4 +5,4 @@ package sudoku
  * 
  * @author rafael
  */
-trait SudokuType
+trait SudokuType extends SudokuPublisher[SudokuEvent] 

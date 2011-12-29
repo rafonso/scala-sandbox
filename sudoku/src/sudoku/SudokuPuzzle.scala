@@ -5,10 +5,7 @@ import scala.collection.mutable.HashMap
 import scala.collection.mutable.MultiMap
 import scala.collection.mutable.Set
 
-sealed trait SudokuPuzzleEvent extends SudokuEvent
-case object SudokuPuzzleIteractionEvent extends SudokuPuzzleEvent
-
-case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil) extends SudokuType with SudokuPublisher[SudokuPuzzleEvent] {
+case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil) extends SudokuType {
   assert(matrix.size == 81)
 
   def this(values: Seq[Int]) = this(values.zipWithIndex.map({ case (v, i) => new Cell(i / 9, i % 9, v) }).toList, Nil)
@@ -48,7 +45,7 @@ case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil
     def rowToString(rowNumber: Int) = {
       val row = this.getRow(rowNumber)
       "|%s %s %s|%s %s %s|%s %s %s|%n".format(
-        cellToString(row, 0), cellToString(row, 1), cellToString(row, 2), 
+        cellToString(row, 0), cellToString(row, 1), cellToString(row, 2),
         cellToString(row, 3), cellToString(row, 4), cellToString(row, 5),
         cellToString(row, 6), cellToString(row, 7), cellToString(row, 8))
     }
@@ -80,14 +77,14 @@ case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil
 
     def copyCell(c: Cell) = {
       val newCell = Cell(c.row, c.col, c.value, c.cellType)
-      newCell.addFilters(c.getFilters.asInstanceOf[Mapa[newCell.Sub, CellEvent]])
+      newCell.addFilters(c.getFilters.asInstanceOf[Mapa[newCell.Sub, SudokuEvent]])
 
       newCell
     }
 
     val copyCells = this.matrix.map(copyCell _)
     val result = new SudokuPuzzle(copyCells, guess :: this.guessCells)
-    result.addFilters(this.getFilters.asInstanceOf[Mapa[result.Sub, SudokuPuzzleEvent]])
+    result.addFilters(this.getFilters.asInstanceOf[Mapa[result.Sub, SudokuEvent]])
 
     result.getRow(guess.row).apply(guess.col).value = guess.value.get
 

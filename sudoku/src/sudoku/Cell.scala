@@ -12,29 +12,12 @@ object CellType extends Enumeration {
 import CellType._
 
 /**
- * Represents a Event that ocurred in a Cell.
- */
-sealed trait CellEvent extends SudokuEvent
-
-/**
- * Indicates when a Cell Value changed.
- */
-case object CellValueChanged extends CellEvent
-
-/**
- * Indicates when a Cell is being evaluated or not.
- * 
- * @param evaluated IF a Cell is evaluated or not.
- */
-case class CellEvaluated(evaluated: Boolean) extends CellEvent
-
-/**
  * Represents a Sudoku Cell with its respective Row, Column and value
  * @param row Cell row
  * @param col Cell column
  * @param v Original Value. If 0, it is not solved.
  */
-case class Cell(row: Int, col: Int, var v: Option[Int], val cellType: CellType) extends SudokuType with SudokuPublisher[CellEvent] {
+case class Cell(row: Int, col: Int, var v: Option[Int], val cellType: CellType) extends SudokuType {
   if (v.isDefined) assume(v.get >= 0 && v.get <= 9)
 
   type Pub <: Cell
