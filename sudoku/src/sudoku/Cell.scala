@@ -17,7 +17,7 @@ import CellType._
  * @param col Cell column
  * @param v Original Value. If 0, it is not solved.
  */
-case class Cell(row: Int, col: Int, var v: Option[Int], val cellType: CellType) extends SudokuType {
+case class Cell(row: Int, col: Int, var v: Option[Int], var cellType: CellType) extends SudokuType {
   if (v.isDefined) assume(v.get >= 0 && v.get <= 9)
 
   type Pub <: Cell
@@ -36,17 +36,52 @@ case class Cell(row: Int, col: Int, var v: Option[Int], val cellType: CellType) 
 
   def this(row: Int, col: Int, v: Int) = this(row, col, if (v > 0) Some(v) else None, if (v > 0) CellType.Original else CellType.Normal)
 
-  def solved = value.isDefined
+  def this(row: Int, col: Int) = this(row, col, None, CellType.Normal)
 
-  def value = v
-
-  def value_=(newValue: Int) {
+  private def evaluateNewValue(newValue: Int) {
     assume(!this.original, "Pre defined cell: %s".format(this))
     assume(this.cellType == Normal)
     assume(newValue > 0 && newValue <= 9)
+  }
 
-    this.v = Some(newValue)
+  private def fillValue(newValue: Option[Int]) {
+    this.v = newValue
     publish(CellValueChanged)
+  }
+
+  def solved = value.isDefined
+
+  /**
+   * Returns Cell's Value
+   */
+  def value = v
+
+  /**
+   * Fill Cell's Value with a Int
+   *
+   * @param newValue Int Value
+   */
+  def value_=(newValue: Int) {
+    this.evaluateNewValue(newValue)
+
+    this.fillValue(Some(newValue))
+  }
+
+  /**
+   * Fill Cell's Value with a Option[Int]
+   *
+   * @param newValue Option[Int] Value
+   */
+  def value_=(newValue: Option[Int]) {
+    if (newValue != this.value) {
+      assume(this.runningState == RunningState.Idle, "Illegal State: %s. It must be %s".format(this.runningState, RunningState.Idle))
+      newValue match {
+        case Some(x) => this.evaluateNewValue(x)
+        case None    =>
+      }
+
+      this.fillValue(newValue)
+    }
   }
 
   def evaluated = this.inEvaluation

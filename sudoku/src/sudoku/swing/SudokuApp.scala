@@ -19,7 +19,20 @@ object SudokuApp extends SimpleSwingApplication {
   val btnAction = new Button("Run")
   val board = new Board
 
-  super.listenTo(btnAction)
+  private def init {
+    super.listenTo(btnAction)
+
+    reactions += {
+      case ButtonClicked(btnAction) => {
+        this.board.isEmpty match {
+          case false => {
+            Dialog.showMessage(null, "OK", "Sudoku", Message.Info)
+          }
+          case true => Dialog.showMessage(null, "Values not defined", "Sudoku", Message.Error)
+        }
+      }
+    }
+  }
 
   def top = new MainFrame {
     contents = new BorderPanel {
@@ -32,16 +45,5 @@ object SudokuApp extends SimpleSwingApplication {
     peer.setLocationRelativeTo(null)
   }
 
-  reactions += {
-    case ButtonClicked(btnAction) => {
-      this.board.isEmpty match {
-        case false => {
-          Dialog.showMessage(null, "OK", "Sudoku", Message.Info)
-        }
-        case true => Dialog.showMessage(null, "Values not defined", "Sudoku", Message.Error)
-      }
-    }
-  }
-
-
+  this.init
 }

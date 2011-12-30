@@ -16,14 +16,17 @@ import javax.swing.border.LineBorder
  */
 class Board extends GridPanel(9, 9) {
 
-  val cells = for (row <- (0 until 9); col <- (0 until 9)) yield new CellPanel(row, col)
+  private val cells = for (row <- (0 until 9); col <- (0 until 9)) yield new CellPanel(row, col)
 
-  border = new LineBorder(Color.BLACK)
-  contents ++ cells.toBuffer
-  preferredSize = new Dimension(300, 300)
+  private def init {
+    border = new LineBorder(Color.BLACK)
+    contents ++ cells.toBuffer
+    preferredSize = new Dimension(300, 300)
 
-  cells.foreach(_.requestFocus())
-  
+    cells.foreach(_.requestFocus())
+  }
+
   def isEmpty = cells.forall(_.value.isEmpty)
-  
+
+  this.init
 }
