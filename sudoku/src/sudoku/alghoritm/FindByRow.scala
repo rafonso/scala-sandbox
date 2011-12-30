@@ -8,4 +8,6 @@ class FindByRow extends SudokuAlghoritim {
     this.solveCells(puzzle, puzzle.getRow(i))
   }).exists(b => b)
 
+  def description = "Solving analizing row cells"
+
 }

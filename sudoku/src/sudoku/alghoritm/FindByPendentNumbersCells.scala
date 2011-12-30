@@ -24,4 +24,6 @@ class FindByPendentNumbersCells extends SudokuAlghoritim {
 
   protected def solveCicle(puzzle: SudokuPuzzle) = puzzle.getNotSolved.map(this.solveCell(puzzle, _)).exists(b => b)
 
+  def description = "Solving analizing pendents values for cell"
+
 }

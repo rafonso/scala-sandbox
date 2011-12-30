@@ -63,6 +63,8 @@ trait SudokuAlghoritim {
 
   protected def solveCicle(puzzle: SudokuPuzzle): Boolean
 
+  def description: String
+  
   def solvePuzzle(puzzle: SudokuPuzzle): Boolean = {
     if (puzzle.isSolved) false
     else this.solve(puzzle, false)

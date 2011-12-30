@@ -11,5 +11,7 @@ class FindByCol extends SudokuAlghoritim {
     this.solveCells(puzzle, puzzle.getCol(i))
   }).exists(b => b)
 
+  def description = "Solving analizing column cells"
+
 }
 

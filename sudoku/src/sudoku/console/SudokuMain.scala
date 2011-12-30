@@ -1,39 +1,39 @@
 package sudoku.console
 
-import scala.annotation.tailrec
 import scala.collection.mutable.Subscriber
 
+import sudoku.Cell
 import sudoku.CellEvaluated
-import sudoku.CellEvent
 import sudoku.CellValueChanged
+import sudoku.ChangeAlghoritimEvent
 import sudoku.CicleEvent
+import sudoku.GuessValueFailedEvent
+import sudoku.GuessValueTryingEvent
+import sudoku.RunningEvent
 import sudoku.SudokuEvent
 import sudoku.SudokuPuzzle
 import sudoku.SudokuPuzzleIteractionEvent
 import sudoku.SudokuSolver
-import sudoku.SudokuSolverEvent
 import sudoku.SudokuType
-import sudoku.GuessValueFailedEvent
-import sudoku.GuessValueTryingEvent
-import sudoku.SudokuPublisher
 
 object SudokuMain extends App with SudokuLog with Subscriber[SudokuEvent, SudokuType] {
 
   def notify(pub: SudokuType, evt: SudokuEvent) {
     (pub, evt) match {
-      case (cell, CellValueChanged)                   => super.log(2, cell.toString())
-      case (cell, CellEvaluated(_))                   => //super.log(4, "Evaluating    " + cell.toString())
-      //      case (cell, CellEvaluated(false))          => super.log(4, "Desevaluating " + cell.toString())
-      case (solver, GuessValueTryingEvent(guessCell)) => super.log("TRYING " + guessCell)
-      case (solver, GuessValueFailedEvent(guessCell)) => super.log("GUESS CELL " + guessCell + " FAILED!")
-      case (puzzle, SudokuPuzzleIteractionEvent) => {
+      case (Cell(row, col, Some(value), _), CellValueChanged)    => super.log(2, "FILLING CELL (%d, %d) = %d".format(row, col, value))
+      case (_: SudokuPuzzle, RunningEvent(state))                => super.log("STATE: " + state)
+      case (_: SudokuSolver, GuessValueTryingEvent(guessCell))   => super.log("TRYING " + guessCell)
+      case (_: SudokuSolver, GuessValueFailedEvent(guessCell))   => super.log("GUESS CELL " + guessCell + " FAILED!")
+      case (_: SudokuSolver, ChangeAlghoritimEvent(description)) => super.log("ALGHORITIM: " + description)
+      case (puzzle: SudokuPuzzle, SudokuPuzzleIteractionEvent) => {
         println("-" * 20)
         super.log(puzzle.toString())
       }
-      case (solver, CicleEvent(puzzle, solvedInCicle)) => {
+      case (_: SudokuSolver, CicleEvent(puzzle, solvedInCicle)) => {
         println("-" * 20 + " : " + solvedInCicle)
         super.log(puzzle.toString())
       }
+      case (_, _) =>
     }
   }
 
