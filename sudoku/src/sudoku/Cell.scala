@@ -17,7 +17,7 @@ import CellType._
  * @param col Cell column
  * @param v Original Value. If 0, it is not solved.
  */
-case class Cell(row: Int, col: Int, var v: Option[Int], var cellType: CellType) extends SudokuType {
+case class Cell(row: Int, col: Int, var v: Option[Int], var cType: CellType) extends SudokuType {
   if (v.isDefined) assume(v.get >= 0 && v.get <= 9)
 
   type Pub <: Cell
@@ -40,7 +40,7 @@ case class Cell(row: Int, col: Int, var v: Option[Int], var cellType: CellType) 
 
   private def evaluateNewValue(newValue: Int) {
     assume(!this.original, "Pre defined cell: %s".format(this))
-    assume(this.cellType == Normal)
+    assume(this.cellType == Normal || this.runningState == RunningState.Idle)
     assume(newValue > 0 && newValue <= 9)
   }
 
@@ -65,6 +65,14 @@ case class Cell(row: Int, col: Int, var v: Option[Int], var cellType: CellType) 
     this.evaluateNewValue(newValue)
 
     this.fillValue(Some(newValue))
+  }
+
+  def cellType = this.cType
+
+  def cellType_=(newValue: CellType) {
+    this.cType = newValue
+
+    super.publish(CellTypeChanged)
   }
 
   /**

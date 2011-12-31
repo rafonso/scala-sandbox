@@ -9,6 +9,7 @@ import scala.swing.Dimension
 import scala.swing.GridPanel
 
 import javax.swing.border.LineBorder
+import sudoku.SudokuPuzzle
 
 /**
  * @author rafael
@@ -17,8 +18,10 @@ import javax.swing.border.LineBorder
 class Board extends GridPanel(9, 9) {
 
   private val cells = for (row <- (0 until 9); col <- (0 until 9)) yield new CellPanel(row, col)
+  
+  val puzzle = SudokuPuzzle(cells.map(_.cell).toList)
 
-  private def init {
+  private def init() {
     border = new LineBorder(Color.BLACK)
     contents ++ cells.toBuffer
     preferredSize = new Dimension(300, 300)
@@ -28,5 +31,5 @@ class Board extends GridPanel(9, 9) {
 
   def isEmpty = cells.forall(_.value.isEmpty)
 
-  this.init
+  this.init()
 }
