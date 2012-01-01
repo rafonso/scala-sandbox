@@ -27,16 +27,16 @@ class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEven
   val cell = new Cell(row, col)
 
   private val tamanho = 14
-  private val FonteNormal = new Font(this.label.font.getName(), Font.PLAIN, tamanho)
-  private val FonteGuess = new Font(this.label.font.getName(), Font.ITALIC, tamanho)
-  private val FonteOriginal = new Font(this.label.font.getName(), Font.BOLD, tamanho)
+  private val NormalFont = new Font(this.label.font.getName(), Font.PLAIN, tamanho)
+  private val GuessFont = new Font(this.label.font.getName(), Font.ITALIC, tamanho)
+  private val OriginalFont = new Font(this.label.font.getName(), Font.BOLD, tamanho)
 
   private val FundoNormal = this.background
-  private val FundoAvaliado = Color.BLUE
+  private val FundoAvaliado = Color.CYAN
 
   private def init() {
     this.label.text = Empty
-    this.label.font = FonteNormal
+    this.label.font = NormalFont
 
     this.contents += this.label
 
@@ -54,24 +54,19 @@ class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEven
 
   def notify(pub: SudokuType, evt: SudokuEvent) {
     (pub, evt) match {
-      case (`cell`, CellEvaluated(true))  => this.background = FundoNormal
-      case (`cell`, CellEvaluated(false)) => this.background = FundoAvaliado
-      case (`cell`, CellTypeChanged) => {
-        this.label.font = this.cell.cellType match {
-          case CellType.Guess    => FonteGuess
-          case CellType.Normal   => FonteNormal
-          case CellType.Original => FonteOriginal
+      case (Cell(`row`, `col`, _, _), CellEvaluated(true))    => this.background = FundoAvaliado
+      case (Cell(`row`, `col`, _, _), CellEvaluated(false))   => this.background = FundoNormal
+      case (Cell(`row`, `col`, Some(x), _), CellValueChanged) => this.label.text = x.toString()
+      case (Cell(`row`, `col`, None, _), CellValueChanged)    => this.label.text = Empty
+      case (Cell(`row`, `col`, _, celltype), CellTypeChanged) => {
+        this.label.font = celltype match {
+          case CellType.Guess    => GuessFont
+          case CellType.Normal   => NormalFont
+          case CellType.Original => OriginalFont
         }
       }
-      case (`cell`, CellValueChanged) => {
-        this.label.text = this.cell.value match {
-          case Some(v) => v.toString()
-          case None    => Empty
-        }
-        println("Cell (%d, %d) changed to %s".format(this.row, this.col, this.cell.value))
-      }
-      case (_, GuessValueTryingEvent(`cell`)) => this.label.font = FonteGuess
-      case (_, GuessValueFailedEvent(`cell`)) => this.label.font = FonteNormal
+      case (_, GuessValueTryingEvent(`cell`)) => this.label.font = GuessFont
+      case (_, GuessValueFailedEvent(`cell`)) => this.label.font = NormalFont
       case (_, _)                             =>
     }
   }

@@ -16,8 +16,6 @@ case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil
 
   private def cellsToPendentNumbers(cells: Seq[Cell], cell: Cell): Seq[Int] = cells.filter(_.solved).map(_.value.get)
 
-  //  val matrix = values.zipWithIndex.map({ case (v, i) => new Cell(i / 9, i % 9, v) }).toList
-
   def getRow(row: Int) = matrix.filter(_.row == row)
 
   def getCol(col: Int) = matrix.filter(_.col == col)

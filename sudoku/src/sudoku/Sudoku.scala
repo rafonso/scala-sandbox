@@ -22,11 +22,17 @@ class SudokuSolver(originalPuzzle: SudokuPuzzle) extends SudokuType {
     puzzle.matrix.foreach(_.runningState = newState)
   }
 
+  import SudokuPublisher._
+
   @tailrec
   private def tryGuessValue(puzzle: SudokuPuzzle, pendentCell: Cell, guessValues: List[Int]): OptPuzzle = guessValues match {
     case Nil => None
     case x :: xs => {
-      val guessCell = pendentCell.copy(v = Some(x), cType = CellType.Guess)
+      val guessCell = pendentCell.copy()
+      guessCell.addFilters(pendentCell.getFilters.asInstanceOf[Mapa[guessCell.Sub, SudokuEvent]])
+      guessCell.cellType = CellType.Guess
+      guessCell.value = x
+      
       val guessPuzzle = puzzle.copyWithGuess(guessCell)
 
       assert(!puzzle.eq(guessPuzzle))

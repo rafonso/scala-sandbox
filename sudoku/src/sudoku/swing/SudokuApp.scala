@@ -14,7 +14,6 @@ import scala.swing.Dialog
 import scala.swing.FlowPanel
 import scala.swing.MainFrame
 import scala.swing.SimpleSwingApplication
-
 import javax.swing.UIManager
 import sudoku.CellType
 import sudoku.RunningEvent
@@ -22,6 +21,7 @@ import sudoku.RunningState
 import sudoku.SudokuEvent
 import sudoku.SudokuPuzzle
 import sudoku.SudokuType
+import scala.swing.event.Key
 
 /**
  * @author rafael
@@ -36,18 +36,20 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
   val board = new Board
 
   private def init {
+    this.btnAction.mnemonic = Key.R
+    this.btnPuzzle.mnemonic = Key.P
+    
     super.listenTo(btnAction, btnPuzzle)
 
     reactions += {
-      case ButtonClicked(btn) if (btn == btnAction) => {
+      case ButtonClicked(`btnAction`) => {
         if (this.board.isEmpty) {
           Dialog.showMessage(null, "Values not defined", "Sudoku", Message.Error)
         } else {
-          Dialog.showMessage(null, "OK", "Sudoku", Message.Info)
-          //          this.run
+          this.run
         }
       }
-      case ButtonClicked(btn) if (btn == btnPuzzle) => {
+      case ButtonClicked(`btnPuzzle`) => {
         val d = new PuzzleDialog(null)
         this.listenTo(d)
         d.open
@@ -94,7 +96,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
   }
 
   def notify(pub: SudokuType, evt: SudokuEvent) {
-    ((pub, evt): @unchecked) match {
+    (pub, evt) match {
       case (_: SudokuPuzzle, RunningEvent(RunningState.Runnning)) => this.btnAction.enabled = false
       case (_, _) =>
     }
