@@ -50,7 +50,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
         }
       }
       case ButtonClicked(`btnPuzzle`) => {
-        val d = new PuzzleDialog(null)
+        val d = new PuzzleDialog(this.board.puzzle)
         this.listenTo(d)
         d.open
       }
@@ -97,7 +97,14 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
 
   def notify(pub: SudokuType, evt: SudokuEvent) {
     (pub, evt) match {
-      case (_: SudokuPuzzle, RunningEvent(RunningState.Runnning)) => this.btnAction.enabled = false
+      case (_: SudokuPuzzle, RunningEvent(RunningState.Runnning)) => {
+        this.btnAction.enabled = false
+        this.btnPuzzle.enabled = false
+      }
+      case (_: SudokuPuzzle, RunningEvent(_)) => {
+        this.btnAction.enabled = true
+        this.btnPuzzle.enabled = true
+      }
       case (_, _) =>
     }
   }

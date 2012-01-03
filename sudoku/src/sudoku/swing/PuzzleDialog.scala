@@ -2,7 +2,6 @@ package sudoku.swing
 
 import java.awt.Dimension
 import java.awt.Font
-
 import scala.swing.Dialog.Message
 import scala.swing.event.ButtonClicked
 import scala.swing.event.Event
@@ -13,16 +12,21 @@ import scala.swing.Dialog
 import scala.swing.FlowPanel
 import scala.swing.TextArea
 import scala.swing.Window
+import sudoku.SudokuPuzzle
 
 case class PuzzleDialogClosed(strPuzzle: Option[String]) extends Event
 
-class PuzzleDialog(owner: Window) extends Dialog(owner) {
+class PuzzleDialog(puzzle: SudokuPuzzle) extends Dialog {
   // default button
   val btnOk = new Button("Ok")
   val btnCancel = new Button("Cancel")
   val txaPuzzle = new TextArea(9, 9)
 
-  def init {
+  private def fillFromPuzzle {
+
+  }
+
+  private def init {
     super.title = "Enter puzzle Values"
     super.preferredSize = new Dimension(300, 400)
     super.modal = true
@@ -42,7 +46,7 @@ class PuzzleDialog(owner: Window) extends Dialog(owner) {
     reactions += {
       case ButtonClicked(`btnOk`) => {
         val concat = """([0-9 ]{9})""".r.findAllIn(txaPuzzle.text).mkString
-        if(concat.size == 81) {
+        if (concat.size == 81) {
           publish(PuzzleDialogClosed(Some(concat)))
           this.close()
         } else {
@@ -56,6 +60,12 @@ class PuzzleDialog(owner: Window) extends Dialog(owner) {
     }
 
     super.centerOnScreen()
+
+    if (!puzzle.matrix.forall(_.value.isEmpty)) {
+      for (row <- (0 until 9)) {
+        this.txaPuzzle.append(puzzle.getRow(row).map(_.value.getOrElse(0)).mkString + "\n")
+      }
+    }
   }
 
   this.init
