@@ -40,8 +40,8 @@ case class Cell(row: Int, col: Int, var v: Option[Int], var cType: CellType) ext
 
   private def evaluateNewValue(newValue: Int) {
     assume(!this.original, "Pre defined cell: %s".format(this))
-    assume(this.cellType == Normal || this.runningState == RunningState.Idle)
-    assume(newValue > 0 && newValue <= 9)
+    assume((this.cellType == Normal) || (this.runningState == RunningState.Idle), "Illegal Cell running state: " + this.runningState)
+    assume(newValue > 0 && newValue <= 9, "Illegal Value: " + newValue)
   }
 
   private def fillValue(newValue: Option[Int]) {
@@ -100,7 +100,7 @@ case class Cell(row: Int, col: Int, var v: Option[Int], var cType: CellType) ext
       publish(CellEvaluated(newValue))
     }
   }
-
+  
   override def hashCode: Int = 41 * (41 + this.row) + this.col
 
   override def equals(other: Any) = other match {

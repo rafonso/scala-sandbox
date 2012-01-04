@@ -18,10 +18,14 @@ import sudoku.SudokuPuzzle
 class Board extends GridPanel(9, 9) {
 
   private val cells = for (row <- (0 until 9); col <- (0 until 9)) yield new CellPanel(row, col)
-  
-  val puzzle = SudokuPuzzle(cells.map(_.cell).toList)
+
+  private var puzz: SudokuPuzzle = _
+
+  def puzzle = this.puzz
 
   private def init() {
+    this.reInitPuzzle
+
     border = new LineBorder(Color.BLACK)
     contents ++ cells.toBuffer
     preferredSize = new Dimension(300, 300)
@@ -30,6 +34,11 @@ class Board extends GridPanel(9, 9) {
   }
 
   def isEmpty = cells.forall(_.value.isEmpty)
+
+  def reInitPuzzle {
+    this.cells.foreach(_.reInitCell)
+    this.puzz = SudokuPuzzle(cells.map(_.cell).toList)
+  }
 
   this.init()
 }

@@ -2,12 +2,10 @@ package sudoku.swing
 
 import java.awt.Color
 import java.awt.Font
-
 import scala.collection.mutable.Subscriber
 import scala.swing.FlowPanel
 import scala.swing.Label
 import scala.swing.Swing
-
 import sudoku.Cell
 import sudoku.CellEvaluated
 import sudoku.CellType
@@ -17,6 +15,7 @@ import sudoku.GuessValueFailedEvent
 import sudoku.GuessValueTryingEvent
 import sudoku.SudokuEvent
 import sudoku.SudokuType
+import sudoku.RunningState
 
 class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEvent, SudokuType] {
 
@@ -69,6 +68,12 @@ class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEven
       case (_, GuessValueFailedEvent(`cell`)) => this.label.font = NormalFont
       case (_, _)                             =>
     }
+  }
+  
+  def reInitCell {
+    this.cell.runningState = RunningState.Idle
+    this.cell.cellType = CellType.Normal
+    this.cell.value = None
   }
 
   init()

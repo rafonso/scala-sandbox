@@ -31,31 +31,34 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
   // Uses Native L&F
   UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
 
-  val btnAction = new Button("Run")
-  val btnPuzzle = new Button("Puzzle")
+  val RunTitle = "Run"
+  val PuzzleTitle = "Puzzle"
+  val NewPuzzleTitle = "New Puzzle"
+  val CleanTitle = "Clean Puzzle"
+
+  val btnAction = new Button(RunTitle) {
+    enabled = false
+    mnemonic = Key.R
+  }
+  val btnPuzzle = new Button(PuzzleTitle) {
+    enabled = true
+    mnemonic = Key.P
+  }
+  val btnClean = new Button(CleanTitle) {
+    enabled = false
+    mnemonic = Key.C
+  }
   val board = new Board
 
   private def init {
-    this.btnAction.mnemonic = Key.R
-    this.btnPuzzle.mnemonic = Key.P
-    
-    super.listenTo(btnAction, btnPuzzle)
+    super.listenTo(this.btnAction, this.btnPuzzle, this.btnClean)
 
     reactions += {
-      case ButtonClicked(`btnAction`) => {
-        if (this.board.isEmpty) {
-          Dialog.showMessage(null, "Values not defined", "Sudoku", Message.Error)
-        } else {
-          this.run
-        }
-      }
-      case ButtonClicked(`btnPuzzle`) => {
-        val d = new PuzzleDialog(this.board.puzzle)
-        this.listenTo(d)
-        d.open
-      }
-      case PuzzleDialogClosed(None)       => this.cleanBoard
-      case PuzzleDialogClosed(Some(text)) => this.fillBoard(text.trim)
+      case ButtonClicked(`btnAction`)     => if (this.board.isEmpty) Dialog.showMessage(null, "Values not defined", "Sudoku", Message.Error) else this.run
+      case ButtonClicked(`btnPuzzle`)     => this.openPuzzleDialog
+      case ButtonClicked(`btnClean`)      => this.cleanBoard
+      //      case PuzzleDialogClosed(None)       => this.cleanBoard
+      case PuzzleDialogClosed(Some(text)) => this.fillBoard(text.trim, (btnPuzzle.text == NewPuzzleTitle))
     }
   }
 
@@ -67,11 +70,23 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
     worker.start()
   }
 
-  private def cleanBoard {
-    this.board.puzzle.matrix.foreach(_.value = None)
+  private def openPuzzleDialog {
+    val d = new PuzzleDialog(this.board.puzzle)
+    this.listenTo(d)
+    d.open
   }
 
-  private def fillBoard(text: String) {
+  private def cleanBoard {
+    this.board.puzzle.matrix.foreach(_.value = None)
+
+    this.btnAction.enabled = false
+    this.btnClean.enabled = false
+  }
+
+  private def fillBoard(text: String, reNewPuzzle: Boolean) {
+    if(reNewPuzzle) {
+      this.board.reInitPuzzle
+    }
     text.zip(this.board.puzzle.matrix).foreach {
       case (ch, cell) if ((ch == ' ') || (ch == '0')) => {
         cell.cellType = CellType.Normal
@@ -82,12 +97,18 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
         cell.value = (ch - '0').toInt
       }
     }
+
+    this.btnAction.enabled = true
+    if(reNewPuzzle) {
+      this.btnPuzzle.text = PuzzleTitle
+    }
+    this.btnClean.enabled = true
   }
 
   def top = new MainFrame {
     contents = new BorderPanel {
       add(SudokuApp.this.board, Position.Center)
-      add(new FlowPanel(SudokuApp.this.btnAction, SudokuApp.this.btnPuzzle), Position.South)
+      add(new FlowPanel(SudokuApp.this.btnAction, SudokuApp.this.btnPuzzle, SudokuApp.this.btnClean), Position.South)
     }
     preferredSize = new Dimension(300, 400)
     resizable = false
@@ -99,11 +120,13 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
     (pub, evt) match {
       case (_: SudokuPuzzle, RunningEvent(RunningState.Runnning)) => {
         this.btnAction.enabled = false
+        this.btnClean.enabled = false
         this.btnPuzzle.enabled = false
       }
-      case (_: SudokuPuzzle, RunningEvent(_)) => {
-        this.btnAction.enabled = true
+      case (_: SudokuPuzzle, RunningEvent(RunningState.Solved)) => {
+        this.btnAction.enabled = false
         this.btnPuzzle.enabled = true
+        this.btnPuzzle.text = NewPuzzleTitle
       }
       case (_, _) =>
     }
