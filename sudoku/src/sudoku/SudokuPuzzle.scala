@@ -93,6 +93,8 @@ case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil
     SudokuPuzzle.iteraction += 1
     super.publish(SudokuPuzzleIteractionEvent)
   }
+  
+  def getIteraction = SudokuPuzzle.iteraction
 
 }
 

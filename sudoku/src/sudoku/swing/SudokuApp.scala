@@ -6,22 +6,31 @@ package sudoku.swing
 import scala.collection.mutable.Subscriber
 import scala.swing.BorderPanel.Position
 import scala.swing.Dialog.Message
+import scala.swing.GridBagPanel._
 import scala.swing.event.ButtonClicked
-import scala.swing.Dimension
+import scala.swing.event.Key
 import scala.swing.BorderPanel
 import scala.swing.Button
 import scala.swing.Dialog
+import scala.swing.Dimension
 import scala.swing.FlowPanel
+import scala.swing.GridBagPanel
+import scala.swing.GridPanel
+import scala.swing.Label
 import scala.swing.MainFrame
 import scala.swing.SimpleSwingApplication
 import javax.swing.UIManager
+import java.awt.Insets
+import sudoku.SudokuPuzzle._
 import sudoku.CellType
 import sudoku.RunningEvent
 import sudoku.RunningState
 import sudoku.SudokuEvent
 import sudoku.SudokuPuzzle
+import sudoku.SudokuSolver
+import sudoku.SudokuPuzzleIteractionEvent
 import sudoku.SudokuType
-import scala.swing.event.Key
+import sudoku.ChangeAlghoritimEvent
 
 /**
  * @author rafael
@@ -48,17 +57,24 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
     enabled = false
     mnemonic = Key.C
   }
+  val lblIteractions = new Label
+  val lblTime = new Label
+  val lblAlghoritim = new Label
+
   val board = new Board
+
+  var t0: Long = _
 
   private def init {
     super.listenTo(this.btnAction, this.btnPuzzle, this.btnClean)
 
     reactions += {
-      case ButtonClicked(`btnAction`)     => if (this.board.isEmpty) Dialog.showMessage(null, "Values not defined", "Sudoku", Message.Error) else this.run
-      case ButtonClicked(`btnPuzzle`)     => this.openPuzzleDialog
-      case ButtonClicked(`btnClean`)      => this.cleanBoard
+      case ButtonClicked(`btnAction`) if (this.board.isEmpty)  => Dialog.showMessage(null, "Values not defined", "Sudoku", Message.Error)
+      case ButtonClicked(`btnAction`) if (!this.board.isEmpty) => this.run
+      case ButtonClicked(`btnPuzzle`)                          => this.openPuzzleDialog
+      case ButtonClicked(`btnClean`)                           => this.cleanBoard
       //      case PuzzleDialogClosed(None)       => this.cleanBoard
-      case PuzzleDialogClosed(Some(text)) => this.fillBoard(text.trim, (btnPuzzle.text == NewPuzzleTitle))
+      case PuzzleDialogClosed(Some(text))                      => this.fillBoard(text.trim, (btnPuzzle.text == NewPuzzleTitle))
     }
   }
 
@@ -81,10 +97,12 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
 
     this.btnAction.enabled = false
     this.btnClean.enabled = false
+    this.lblIteractions.text = ""
+    this.lblTime.text = ""
   }
 
   private def fillBoard(text: String, reNewPuzzle: Boolean) {
-    if(reNewPuzzle) {
+    if (reNewPuzzle) {
       this.board.reInitPuzzle
     }
     text.zip(this.board.puzzle.matrix).foreach {
@@ -99,7 +117,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
     }
 
     this.btnAction.enabled = true
-    if(reNewPuzzle) {
+    if (reNewPuzzle) {
       this.btnPuzzle.text = PuzzleTitle
     }
     this.btnClean.enabled = true
@@ -109,6 +127,44 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
     contents = new BorderPanel {
       add(SudokuApp.this.board, Position.Center)
       add(new FlowPanel(SudokuApp.this.btnAction, SudokuApp.this.btnPuzzle, SudokuApp.this.btnClean), Position.South)
+      add(new GridBagPanel {
+        val c = new Constraints
+        c.weightx = 0.5
+        c.insets = new Insets(5, 5, 5, 5)
+
+        c.anchor = Anchor.East
+        c.fill = Fill.None
+        c.gridx = 0;
+        c.gridy = 0;
+        layout(new Label("Iteractions:")) = c
+
+        c.fill = Fill.Horizontal
+        c.gridx = 1;
+        c.gridy = 0;
+        layout(lblIteractions) = c
+
+        c.anchor = Anchor.East
+        c.fill = Fill.None
+        c.gridx = 0;
+        c.gridy = 1;
+        layout(new Label("Time (ms):")) = c
+
+        c.fill = Fill.Horizontal
+        c.gridx = 1;
+        c.gridy = 1;
+        layout(lblTime) = c
+
+        c.anchor = Anchor.East
+        c.fill = Fill.None
+        c.gridx = 0;
+        c.gridy = 2;
+        layout(new Label("Alghortim:")) = c
+
+        c.fill = Fill.Horizontal
+        c.gridx = 1;
+        c.gridy = 2;
+        layout(lblAlghoritim) = c
+      }, Position.North)
     }
     preferredSize = new Dimension(300, 400)
     resizable = false
@@ -122,12 +178,18 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
         this.btnAction.enabled = false
         this.btnClean.enabled = false
         this.btnPuzzle.enabled = false
+        this.t0 = System.currentTimeMillis()
       }
       case (_: SudokuPuzzle, RunningEvent(RunningState.Solved)) => {
         this.btnAction.enabled = false
         this.btnPuzzle.enabled = true
         this.btnPuzzle.text = NewPuzzleTitle
       }
+      case (puzzle: SudokuPuzzle, SudokuPuzzleIteractionEvent) => {
+        lblIteractions.text = "%,4d".format(puzzle.getIteraction)
+        lblTime.text = "%,10d".format((System.currentTimeMillis() - t0))
+      }
+      case (_: SudokuSolver, ChangeAlghoritimEvent(description)) => lblAlghoritim.text = description
       case (_, _) =>
     }
   }
