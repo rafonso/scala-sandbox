@@ -18,6 +18,8 @@ import sudoku.SudokuSolver
 import sudoku.SudokuType
 
 class SudokuWorker(puzzle: SudokuPuzzle) extends SwingWorker {
+  
+  val solver = new SudokuSolver(puzzle)
 
 //  def notify(pub: SudokuType, evt: SudokuEvent) {
 //    ((pub, evt): @unchecked) match {
@@ -39,7 +41,7 @@ class SudokuWorker(puzzle: SudokuPuzzle) extends SwingWorker {
 //  }
 
   def act() {
-    val solver = new SudokuSolver(puzzle)
+    
 //    puzzle.subscribe(this)
 //    puzzle.matrix.foreach(_.subscribe(this))
 //    solver.subscribe(this)

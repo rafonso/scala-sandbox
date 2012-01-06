@@ -81,7 +81,9 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
   private def run {
     val puzzle = this.board.puzzle
     puzzle.subscribe(this)
+
     val worker = new SudokuWorker(puzzle)
+    worker.solver.subscribe(this)
 
     worker.start()
   }
@@ -129,45 +131,54 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
       add(new FlowPanel(SudokuApp.this.btnAction, SudokuApp.this.btnPuzzle, SudokuApp.this.btnClean), Position.South)
       add(new GridBagPanel {
         val c = new Constraints
-        c.weightx = 0.5
         c.insets = new Insets(5, 5, 5, 5)
 
         c.anchor = Anchor.East
         c.fill = Fill.None
         c.gridx = 0;
         c.gridy = 0;
+        c.weightx = 0
         layout(new Label("Iteractions:")) = c
 
+        c.anchor = Anchor.West
         c.fill = Fill.Horizontal
         c.gridx = 1;
         c.gridy = 0;
+        c.weightx = 1
         layout(lblIteractions) = c
 
         c.anchor = Anchor.East
         c.fill = Fill.None
-        c.gridx = 0;
-        c.gridy = 1;
+        c.gridx = 2;
+        c.gridy = 0;
+        c.weightx = 0
         layout(new Label("Time (ms):")) = c
 
+        c.anchor = Anchor.West
         c.fill = Fill.Horizontal
-        c.gridx = 1;
-        c.gridy = 1;
+        c.gridx = 3;
+        c.gridy = 0;
+        c.weightx = 1
         layout(lblTime) = c
 
         c.anchor = Anchor.East
         c.fill = Fill.None
         c.gridx = 0;
-        c.gridy = 2;
+        c.gridy = 1;
+        c.weightx = 0
         layout(new Label("Alghortim:")) = c
 
+        c.anchor = Anchor.West
         c.fill = Fill.Horizontal
         c.gridx = 1;
-        c.gridy = 2;
+        c.gridy = 1;
+        c.gridwidth = 3
+        c.weightx = 1
         layout(lblAlghoritim) = c
       }, Position.North)
     }
     preferredSize = new Dimension(300, 400)
-    resizable = false
+    resizable = true
     title = "Sudoku"
     super.centerOnScreen()
   }
@@ -189,8 +200,8 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
         lblIteractions.text = "%,4d".format(puzzle.getIteraction)
         lblTime.text = "%,10d".format((System.currentTimeMillis() - t0))
       }
-      case (_: SudokuSolver, ChangeAlghoritimEvent(description)) => lblAlghoritim.text = description
-      case (_, _) =>
+      case (_, ChangeAlghoritimEvent(description)) => lblAlghoritim.text = description
+      case (_, _)                                  =>
     }
   }
 
