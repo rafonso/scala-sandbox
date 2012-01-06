@@ -19,8 +19,6 @@ import sudoku.RunningState
 
 class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEvent, SudokuType] {
 
-  private val Empty = " "
-
   val label = new Label
 
   val cell = new Cell(row, col)

@@ -31,6 +31,8 @@ import sudoku.SudokuSolver
 import sudoku.SudokuPuzzleIteractionEvent
 import sudoku.SudokuType
 import sudoku.ChangeAlghoritimEvent
+import scala.swing.Swing
+import scala.swing.Alignment
 
 /**
  * @author rafael
@@ -106,6 +108,9 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
   private def fillBoard(text: String, reNewPuzzle: Boolean) {
     if (reNewPuzzle) {
       this.board.reInitPuzzle
+      this.lblAlghoritim.text = Empty
+      this.lblIteractions.text = Empty
+      this.lblTime.text = Empty
     }
     text.zip(this.board.puzzle.matrix).foreach {
       case (ch, cell) if ((ch == ' ') || (ch == '0')) => {
@@ -127,8 +132,6 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
 
   def top = new MainFrame {
     contents = new BorderPanel {
-      add(SudokuApp.this.board, Position.Center)
-      add(new FlowPanel(SudokuApp.this.btnAction, SudokuApp.this.btnPuzzle, SudokuApp.this.btnClean), Position.South)
       add(new GridBagPanel {
         val c = new Constraints
         c.insets = new Insets(5, 5, 5, 5)
@@ -146,6 +149,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
         c.gridy = 0;
         c.weightx = 1
         layout(lblIteractions) = c
+        lblIteractions.xAlignment = Alignment.Right
 
         c.anchor = Anchor.East
         c.fill = Fill.None
@@ -160,6 +164,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
         c.gridy = 0;
         c.weightx = 1
         layout(lblTime) = c
+        lblTime.xAlignment = Alignment.Right
 
         c.anchor = Anchor.East
         c.fill = Fill.None
@@ -175,7 +180,14 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
         c.gridwidth = 3
         c.weightx = 1
         layout(lblAlghoritim) = c
+        lblAlghoritim.xAlignment = Alignment.Left
+
       }, Position.North)
+      add(SudokuApp.this.board, Position.Center)
+      add(new GridPanel(1, 3) {
+        contents += (SudokuApp.this.btnAction, SudokuApp.this.btnPuzzle, SudokuApp.this.btnClean)
+        hGap = 2
+      }, Position.South)
     }
     preferredSize = new Dimension(300, 400)
     resizable = true
@@ -193,6 +205,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
       }
       case (_: SudokuPuzzle, RunningEvent(RunningState.Solved)) => {
         this.btnAction.enabled = false
+        //        this.btnClean.enabled = true
         this.btnPuzzle.enabled = true
         this.btnPuzzle.text = NewPuzzleTitle
       }
