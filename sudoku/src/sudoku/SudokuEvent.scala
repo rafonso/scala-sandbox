@@ -25,7 +25,10 @@ sealed trait CellEvent extends SudokuEvent
  */
 case object CellValueChanged extends CellEvent
 
-case object CellTypeChanged extends CellEvent
+/**
+ * Indicates when a Cell Status changes.
+ */
+case object CellStatusChanged extends CellEvent
 
 /**
  * Indicates when a Cell is being evaluated or not.

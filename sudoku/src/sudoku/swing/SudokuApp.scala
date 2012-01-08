@@ -22,7 +22,7 @@ import scala.swing.SimpleSwingApplication
 import javax.swing.UIManager
 import java.awt.Insets
 import sudoku.SudokuPuzzle._
-import sudoku.CellType
+import sudoku.CellStatus
 import sudoku.RunningEvent
 import sudoku.RunningState
 import sudoku.SudokuEvent
@@ -114,11 +114,11 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
     }
     text.zip(this.board.puzzle.matrix).foreach {
       case (ch, cell) if ((ch == ' ') || (ch == '0')) => {
-        cell.cellType = CellType.Normal
+        cell.status = CellStatus.Empty
         cell.value = None
       }
       case (ch, cell) => {
-        cell.cellType = CellType.Original
+        cell.status = CellStatus.Original
         cell.value = (ch - '0').toInt
       }
     }

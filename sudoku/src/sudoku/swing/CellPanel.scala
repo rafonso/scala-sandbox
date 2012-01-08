@@ -8,8 +8,8 @@ import scala.swing.Label
 import scala.swing.Swing
 import sudoku.Cell
 import sudoku.CellEvaluated
-import sudoku.CellType
-import sudoku.CellTypeChanged
+import sudoku.CellStatus
+import sudoku.CellStatusChanged
 import sudoku.CellValueChanged
 import sudoku.GuessValueFailedEvent
 import sudoku.GuessValueTryingEvent
@@ -51,26 +51,24 @@ class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEven
 
   def notify(pub: SudokuType, evt: SudokuEvent) {
     (pub, evt) match {
-      case (Cell(`row`, `col`, _, _, _), CellEvaluated(true))    => this.background = FundoAvaliado
-      case (Cell(`row`, `col`, _, _, _), CellEvaluated(false))   => this.background = FundoNormal
+      case (Cell(`row`, `col`, _, _, _), CellEvaluated(true)) => this.background = FundoAvaliado
+      case (Cell(`row`, `col`, _, _, _), CellEvaluated(false)) => this.background = FundoNormal
       case (Cell(`row`, `col`, Some(x), _, _), CellValueChanged) => this.label.text = x.toString()
-      case (Cell(`row`, `col`, None, _, _), CellValueChanged)    => this.label.text = Empty
-      case (Cell(`row`, `col`, _, celltype, _), CellTypeChanged) => {
-        this.label.font = celltype match {
-          case CellType.Guess    => GuessFont
-          case CellType.Normal   => NormalFont
-          case CellType.Original => OriginalFont
-        }
-      }
+      case (Cell(`row`, `col`, None, _, _), CellValueChanged) => this.label.text = Empty
+      case (Cell(`row`, `col`, _, CellStatus.Empty, _), CellStatusChanged) => this.label.font = NormalFont
+      case (Cell(`row`, `col`, _, CellStatus.Original, _), CellStatusChanged) => this.label.font = OriginalFont
+      case (Cell(`row`, `col`, _, CellStatus.FilledWithNoGuess, _), CellStatusChanged) => this.label.font = NormalFont
+      case (Cell(`row`, `col`, _, CellStatus.Guess, _), CellStatusChanged) => this.label.font = GuessFont
+      case (Cell(`row`, `col`, _, CellStatus.FilledWithGuess, _), CellStatusChanged) => this.label.font = NormalFont
       case (_, GuessValueTryingEvent(`cell`)) => this.label.font = GuessFont
       case (_, GuessValueFailedEvent(`cell`)) => this.label.font = NormalFont
-      case (_, _)                             =>
+      case (_, _) =>
     }
   }
 
   def reInitCell {
     this.cell.runningState = RunningState.Idle
-    this.cell.cellType = CellType.Normal
+    this.cell.status = CellStatus.Empty
     this.cell.value = None
     this.cell.guessCell = None
   }

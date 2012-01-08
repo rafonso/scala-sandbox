@@ -91,25 +91,6 @@ case class SudokuPuzzle(val matrix: List[Cell], var iteraction: Int = 0, val gue
     sbPuzzle.toString
   }
 
-  @deprecated("Don't Use", "")
-  def copyWithGuess(guess: Cell) = {
-
-    def copyCell(c: Cell) = {
-      val newCell = Cell(c.row, c.col, c.value, c.cellType)
-      //      newCell.addFilters(c.getFilters.asInstanceOf[Mapa[newCell.Sub, SudokuEvent]])
-
-      newCell
-    }
-
-    val copyCells = this.matrix.map(copyCell _)
-    val result = new SudokuPuzzle(copyCells, this.iteraction, this.guessesCells.push(guess))
-    //    result.addFilters(this.getFilters.asInstanceOf[Mapa[result.Sub, SudokuEvent]])
-
-    result.getRow(guess.row).apply(guess.col).value = guess.value.get
-
-    result
-  }
-
   def nextIteraction {
     this.iteraction += 1
     super.publish(SudokuPuzzleIteractionEvent)
