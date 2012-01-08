@@ -51,11 +51,11 @@ class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEven
 
   def notify(pub: SudokuType, evt: SudokuEvent) {
     (pub, evt) match {
-      case (Cell(`row`, `col`, _, _), CellEvaluated(true))    => this.background = FundoAvaliado
-      case (Cell(`row`, `col`, _, _), CellEvaluated(false))   => this.background = FundoNormal
-      case (Cell(`row`, `col`, Some(x), _), CellValueChanged) => this.label.text = x.toString()
-      case (Cell(`row`, `col`, None, _), CellValueChanged)    => this.label.text = Empty
-      case (Cell(`row`, `col`, _, celltype), CellTypeChanged) => {
+      case (Cell(`row`, `col`, _, _, _), CellEvaluated(true))    => this.background = FundoAvaliado
+      case (Cell(`row`, `col`, _, _, _), CellEvaluated(false))   => this.background = FundoNormal
+      case (Cell(`row`, `col`, Some(x), _, _), CellValueChanged) => this.label.text = x.toString()
+      case (Cell(`row`, `col`, None, _, _), CellValueChanged)    => this.label.text = Empty
+      case (Cell(`row`, `col`, _, celltype, _), CellTypeChanged) => {
         this.label.font = celltype match {
           case CellType.Guess    => GuessFont
           case CellType.Normal   => NormalFont
@@ -67,11 +67,12 @@ class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEven
       case (_, _)                             =>
     }
   }
-  
+
   def reInitCell {
     this.cell.runningState = RunningState.Idle
     this.cell.cellType = CellType.Normal
     this.cell.value = None
+    this.cell.guessCell = None
   }
 
   init()

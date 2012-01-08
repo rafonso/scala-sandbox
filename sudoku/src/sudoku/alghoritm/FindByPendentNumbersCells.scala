@@ -10,10 +10,10 @@ class FindByPendentNumbersCells extends SudokuAlghoritim {
     cell.evaluated = true
 
     val result = puzzle.getPendentsNumbersFromCell(cell) match {
-      case x :: Nil => this.fillCell(cell, x)
-      case Nil => puzzle.guessCells match {
-        case Nil     => throw new SudokuException("There is no disponible number for cell " + cell, puzzle)
-        case c :: cs => false
+      case x :: Nil => this.fillCell(cell, x, puzzle.lastGuess)
+      case Nil => {
+        if (puzzle.guessesCells.isEmpty) throw new SudokuException("There is no disponible number for cell " + cell, puzzle)
+        else false
       }
       case _ => false
     }

@@ -14,10 +14,9 @@ trait SudokuAlghoritim {
       true
     } else {
       puzzle.nextIteraction
-      this.solveCicle(puzzle) match {
-        case true  => solve(puzzle, true)
-        case false => hadOneCicleSolvedAtLeast
-      }
+
+      if (this.solveCicle(puzzle)) solve(puzzle, true)
+      else hadOneCicleSolvedAtLeast
     }
   }
 
@@ -28,22 +27,22 @@ trait SudokuAlghoritim {
   protected def findCellsMayHaveValue(pendentCells: Seq[CellPendenstValues], value: Int) =
     pendentCells.filter(_.pendentValues.contains(value)).map(_.cell)
 
-  protected def fillCell(cell: Cell, value: Int) = {
-    cell.value = value
+  protected def fillCell(cell: Cell, value: Int, guessCell: Option[Cell]) = {
+    cell.addValue(value, guessCell)
     true
   }
 
-  private def findCellUniqueCandidade(cellsWithValue: List[PendentCell], value: Int): Boolean = cellsWithValue match {
+  private def findCellUniqueCandidade(cellsWithValue: List[PendentCell], value: Int, guessCell: Option[Cell]): Boolean = cellsWithValue match {
     case Nil                                 => false
-    case PendentCell(cell, List(value)) :: _ => this.fillCell(cell, value)
-    case pc :: others                        => findCellUniqueCandidade(others, value)
+    case PendentCell(cell, List(value)) :: _ => this.fillCell(cell, value, guessCell)
+    case pc :: others                        => findCellUniqueCandidade(others, value, guessCell)
   }
 
-  private def solveCellsForValue(pendentCells: List[PendentCell], value: Int): Boolean = {
+  private def solveCellsForValue(pendentCells: List[PendentCell], value: Int, guessCell: Option[Cell]): Boolean = {
     pendentCells.filter(pc => pc.candidates.contains(value)) match {
       case Nil                         => false
-      case PendentCell(cell, _) :: Nil => this.fillCell(cell, value)
-      case cellsWithValue              => this.findCellUniqueCandidade(cellsWithValue, value)
+      case PendentCell(cell, _) :: Nil => this.fillCell(cell, value, guessCell)
+      case cellsWithValue              => this.findCellUniqueCandidade(cellsWithValue, value, guessCell)
     }
   }
 
@@ -55,7 +54,7 @@ trait SudokuAlghoritim {
       .map(c => PendentCell(c, puzzle.getPendentsNumbersFromCell(c)))
       .filter(p => !p.candidates.isEmpty)
 
-    val result = if (pendentCells.isEmpty) false else (1 to 9).map(v => solveCellsForValue(pendentCells, v)).exists(b => b)
+    val result = if (pendentCells.isEmpty) false else (1 to 9).map(v => solveCellsForValue(pendentCells, v, puzzle.lastGuess)).exists(b => b)
 
     this.prepareEvaluatedCells(cells, false)
     result
@@ -64,7 +63,7 @@ trait SudokuAlghoritim {
   protected def solveCicle(puzzle: SudokuPuzzle): Boolean
 
   def description: String
-  
+
   def solvePuzzle(puzzle: SudokuPuzzle): Boolean = {
     if (puzzle.isSolved) false
     else this.solve(puzzle, false)

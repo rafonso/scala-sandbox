@@ -1,5 +1,7 @@
 package sudoku
 
+import scala.collection.mutable.Publisher
+
 object RunningState extends Enumeration {
 
   /**
@@ -16,7 +18,7 @@ object RunningState extends Enumeration {
    * Puzzle was solved
    */
   val Solved = Value
-  
+
   /**
    * Puzzle was not solved
    */
@@ -38,15 +40,15 @@ object RunningState extends Enumeration {
  *
  * @author rafael
  */
-trait SudokuType extends SudokuPublisher[SudokuEvent] {
-  
+trait SudokuType extends Publisher[SudokuEvent] {
+
   private var runState = RunningState.Idle
-  
+
   def runningState = runState
-  
+
   def runningState_=(newState: RunningState.Value) {
     this.runState = newState
-    
+
     super.publish(RunningEvent(this.runState))
   }
 } 

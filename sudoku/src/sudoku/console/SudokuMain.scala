@@ -20,12 +20,12 @@ object SudokuMain extends App with SudokuLog with Subscriber[SudokuEvent, Sudoku
 
   def notify(pub: SudokuType, evt: SudokuEvent) {
     (pub, evt) match {
-      case (Cell(row, col, Some(value), _), CellValueChanged)    => super.log(2, "FILLING CELL (%d, %d) = %d".format(row, col, value))
+      case (Cell(row, col, Some(value), _, _), CellValueChanged) => super.log(2, "FILLING CELL (%d, %d) = %d".format(row, col, value))
       case (_: SudokuPuzzle, RunningEvent(state))                => super.log("STATE: " + state)
       case (_: SudokuSolver, GuessValueTryingEvent(guessCell))   => super.log("TRYING " + guessCell)
       case (_: SudokuSolver, GuessValueFailedEvent(guessCell))   => super.log("GUESS CELL " + guessCell + " FAILED!")
       case (_: SudokuSolver, ChangeAlghoritimEvent(description)) => super.log("ALGHORITIM: " + description)
-      case (puzzle: SudokuPuzzle, SudokuPuzzleIteractionEvent) => {
+      case (_: SudokuType, SudokuPuzzleIteractionEvent) => {
         println("-" * 20)
         super.log(puzzle.toString())
       }

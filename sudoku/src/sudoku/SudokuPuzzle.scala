@@ -4,11 +4,13 @@ import scala.collection.mutable.Publisher
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.MultiMap
 import scala.collection.mutable.Set
+import scala.collection.mutable.Stack
+import scala.deprecated
 
-case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil) extends SudokuType {
+case class SudokuPuzzle(val matrix: List[Cell], var iteraction: Int = 0, val guessesCells: Stack[Cell] = new Stack[Cell]) extends SudokuType {
   assert(matrix.size == 81)
 
-  def this(values: Seq[Int]) = this(values.zipWithIndex.map({ case (v, i) => new Cell(i / 9, i % 9, v) }).toList, Nil)
+  def this(values: Seq[Int]) = this(values.zipWithIndex.map({ case (v, i) => new Cell(i / 9, i % 9, v) }).toList)
 
   type Pub <: SudokuPuzzle
 
@@ -36,6 +38,26 @@ case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil
 
   def isSolved = this.matrix.forall(_.solved)
 
+  def addGuessCell(guess: Cell) = this.guessesCells.push(guess)
+
+  def removeLastGuess = {
+    lastGuess match {
+      case Some(guess) => {
+        this.matrix
+          .filter(cell =>
+            cell.getGuessCell match {
+              case Some(`guess`) => true
+              case _             => false
+            })
+          .foreach(_.cleanValue)
+        this.guessesCells.pop()
+      }
+      case None => throw new SudokuException("There is not guess values to remove", this)
+    }
+  }
+
+  def lastGuess: Option[Cell] = if (this.guessesCells.isEmpty) None else Some(this.guessesCells.top)
+
   override def toString = {
 
     def cellToString(row: List[Cell], col: Int): Any = row(col).value.getOrElse(".")
@@ -48,9 +70,9 @@ case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil
         cellToString(row, 6), cellToString(row, 7), cellToString(row, 8))
     }
 
-    val sbPuzzle = new StringBuilder("Iteraction #%,4d%n".format(SudokuPuzzle.iteraction))
-    if (!this.guessCells.isEmpty) {
-      sbPuzzle.append("Guesses: %s%n".format(this.guessCells.reverse))
+    val sbPuzzle = new StringBuilder("Iteraction #%,4d%n".format(this.iteraction))
+    if (!this.guessesCells.isEmpty) {
+      sbPuzzle.append("Guesses: %s%n".format(this.guessesCells))
     }
     sbPuzzle append SudokuPuzzle.upperBorder
     sbPuzzle append rowToString(0)
@@ -69,20 +91,19 @@ case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil
     sbPuzzle.toString
   }
 
+  @deprecated("Don't Use", "")
   def copyWithGuess(guess: Cell) = {
-
-    import SudokuPublisher._
 
     def copyCell(c: Cell) = {
       val newCell = Cell(c.row, c.col, c.value, c.cellType)
-      newCell.addFilters(c.getFilters.asInstanceOf[Mapa[newCell.Sub, SudokuEvent]])
+      //      newCell.addFilters(c.getFilters.asInstanceOf[Mapa[newCell.Sub, SudokuEvent]])
 
       newCell
     }
 
     val copyCells = this.matrix.map(copyCell _)
-    val result = new SudokuPuzzle(copyCells, guess :: this.guessCells)
-    result.addFilters(this.getFilters.asInstanceOf[Mapa[result.Sub, SudokuEvent]])
+    val result = new SudokuPuzzle(copyCells, this.iteraction, this.guessesCells.push(guess))
+    //    result.addFilters(this.getFilters.asInstanceOf[Mapa[result.Sub, SudokuEvent]])
 
     result.getRow(guess.row).apply(guess.col).value = guess.value.get
 
@@ -90,11 +111,11 @@ case class SudokuPuzzle(val matrix: List[Cell], val guessCells: List[Cell] = Nil
   }
 
   def nextIteraction {
-    SudokuPuzzle.iteraction += 1
+    this.iteraction += 1
     super.publish(SudokuPuzzleIteractionEvent)
   }
-  
-  def getIteraction = SudokuPuzzle.iteraction
+
+  def getIteraction = this.iteraction
 
 }
 
@@ -107,7 +128,7 @@ object SudokuPuzzle {
 
   private val originalNumbers = (1 to 9)
 
-  private var iteraction = 0
+  //  private var iteraction = 0
 
   def apply(str: String) = new SudokuPuzzle(str.map(_.toInt - '0'))
 

@@ -22,36 +22,30 @@ class SudokuSolver(originalPuzzle: SudokuPuzzle) extends SudokuType {
     puzzle.matrix.foreach(_.runningState = newState)
   }
 
-  import SudokuPublisher._
-
   @tailrec
   private def tryGuessValue(puzzle: SudokuPuzzle, pendentCell: Cell, guessValues: List[Int]): OptPuzzle = guessValues match {
     case Nil => None
     case x :: xs => {
-      val guessCell = pendentCell.copy()
-      guessCell.addFilters(pendentCell.getFilters.asInstanceOf[Mapa[guessCell.Sub, SudokuEvent]])
-      guessCell.cellType = CellType.Guess
-      guessCell.value = x
-      
-      val guessPuzzle = puzzle.copyWithGuess(guessCell)
+      puzzle.addGuessCell(pendentCell)
+      pendentCell.addValue(x, puzzle.lastGuess)
+      super.publish(GuessValueTryingEvent(pendentCell))
 
-      assert(!puzzle.eq(guessPuzzle))
-      super.publish(GuessValueTryingEvent(guessCell))
-      this.solve(guessPuzzle) match {
-        case Some(p) => Some(p)
-        case None => {
-          super.publish(GuessValueFailedEvent(guessCell))
-          tryGuessValue(puzzle, pendentCell, xs)
-        }
+      val puzzleResult = this.solve(puzzle)
+
+      if (puzzleResult.isDefined) puzzleResult
+      else {
+        super.publish(GuessValueFailedEvent(pendentCell))
+        puzzle.removeLastGuess
+        tryGuessValue(puzzle, pendentCell, xs)
       }
     }
   }
 
   @tailrec
   private def tryGuessCells(puzzle: SudokuPuzzle, pendentCells: List[PendentCell]): OptPuzzle = pendentCells match {
-    case Nil => puzzle.guessCells match {
-      case Nil => throw new SudokuException("It is not possible solve Sudoku", puzzle)
-      case _   => None
+    case Nil => {
+      if (puzzle.guessesCells.isEmpty) throw new SudokuException("It is not possible solve Sudoku", puzzle)
+      else None
     }
     case PendentCell(cell, pendentValues) :: others => tryGuessValue(puzzle, cell, pendentValues) match {
       case Some(p) => Some(p)
@@ -98,8 +92,8 @@ class SudokuSolver(originalPuzzle: SudokuPuzzle) extends SudokuType {
       val result = this.solve(this.originalPuzzle)
 
       result match {
-        case Some(p) => this.changeRunningState(RunningState.Solved, p)
-        case None    => this.changeRunningState(RunningState.NotSolved, this.originalPuzzle)
+        case Some(puzzle) => this.changeRunningState(RunningState.Solved, puzzle)
+        case None         => this.changeRunningState(RunningState.NotSolved, this.originalPuzzle)
       }
 
       result
