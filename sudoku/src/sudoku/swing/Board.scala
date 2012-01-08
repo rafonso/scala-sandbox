@@ -26,7 +26,7 @@ class Board extends GridPanel(9, 9) {
   private def init() {
     this.reInitPuzzle
 
-    border = new LineBorder(Color.BLACK)
+//    border = new LineBorder(Color.BLACK)
     contents ++ cells.toBuffer
     preferredSize = new Dimension(300, 300)
 

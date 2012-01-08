@@ -4,7 +4,6 @@
 package sudoku.swing
 
 import java.awt.Insets
-
 import scala.collection.mutable.Subscriber
 import scala.swing.BorderPanel.Position
 import scala.swing.Dialog.Message
@@ -17,6 +16,7 @@ import scala.swing.Alignment
 import scala.swing.BorderPanel
 import scala.swing.BoxPanel
 import scala.swing.Button
+import scala.swing.Swing
 import scala.swing.Dialog
 import scala.swing.GridBagPanel
 import scala.swing.GridPanel
@@ -24,9 +24,9 @@ import scala.swing.Label
 import scala.swing.MainFrame
 import scala.swing.Orientation
 import scala.swing.ScrollPane
+import scala.swing.ScrollPane._
 import scala.swing.SimpleSwingApplication
 import scala.swing.Table
-
 import javax.swing.table.AbstractTableModel
 import javax.swing.UIManager
 import sudoku.Cell
@@ -40,6 +40,8 @@ import sudoku.SudokuEvent
 import sudoku.SudokuPuzzle
 import sudoku.SudokuPuzzleIteractionEvent
 import sudoku.SudokuType
+import scala.swing.Separator
+import java.awt.Font
 
 /**
  * @author rafael
@@ -110,7 +112,10 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
   val lblTime = new Label
   val lblAlghoritim = new Label
 
-  val board = new Board
+  val board = new Board {
+    minimumSize = preferredSize
+    maximumSize = preferredSize
+  }
 
   var t0: Long = _
 
@@ -180,66 +185,98 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
   }
 
   def top = new MainFrame {
-    contents = new BorderPanel {
-      add(new GridBagPanel {
-        val c = new Constraints
-        c.insets = new Insets(5, 5, 5, 5)
 
-        c.anchor = Anchor.East
-        c.fill = Fill.None
-        c.gridx = 0;
-        c.gridy = 0;
-        c.weightx = 0
-        layout(new Label("Iteractions:")) = c
+    val guessesComponent = new ScrollPane(SudokuApp.this.tblGuesses) {
+        border = Swing.TitledBorder(Swing.EtchedBorder, "Guesses Values")
+        preferredSize.width = 120
+        minimumSize.width = 120
+        verticalScrollBarPolicy = BarPolicy.Never
+      }
+    
+    val viewComponent = new GridBagPanel {
+      val c = new Constraints
+      c.insets = new Insets(5, 5, 5, 5)
 
-        c.anchor = Anchor.West
-        c.fill = Fill.Horizontal
-        c.gridx = 1;
-        c.gridy = 0;
-        c.weightx = 1
-        layout(lblIteractions) = c
-        lblIteractions.xAlignment = Alignment.Right
+      c.anchor = Anchor.NorthEast
+      c.fill = Fill.None
+      c.gridx = 0;
+      c.gridy = 0;
+      c.weightx = 0
+      layout(new Label("Iteractions:") {
+        font = font.deriveFont(Font.BOLD)
+      }) = c
 
-        c.anchor = Anchor.East
-        c.fill = Fill.None
-        c.gridx = 2;
-        c.gridy = 0;
-        c.weightx = 0
-        layout(new Label("Time (ms):")) = c
+      c.anchor = Anchor.NorthWest
+      c.fill = Fill.Horizontal
+      c.gridx = 1;
+      c.gridy = 0;
+      c.weightx = 1
+      layout(lblIteractions) = c
+      lblIteractions.xAlignment = Alignment.Right
 
-        c.anchor = Anchor.West
-        c.fill = Fill.Horizontal
-        c.gridx = 3;
-        c.gridy = 0;
-        c.weightx = 1
-        layout(lblTime) = c
-        lblTime.xAlignment = Alignment.Right
+      c.anchor = Anchor.East
+      c.fill = Fill.None
+      c.gridx = 2;
+      c.gridy = 0;
+      c.weightx = 0
+      layout(new Label("Time (ms):") {
+        font = font.deriveFont(Font.BOLD)
+      }) = c
 
-        c.anchor = Anchor.East
-        c.fill = Fill.None
-        c.gridx = 0;
-        c.gridy = 1;
-        c.weightx = 0
-        layout(new Label("Alghortim:")) = c
+      c.anchor = Anchor.West
+      c.fill = Fill.Horizontal
+      c.gridx = 3;
+      c.gridy = 0;
+      c.weightx = 1
+      layout(lblTime) = c
+      lblTime.xAlignment = Alignment.Right
 
-        c.anchor = Anchor.West
-        c.fill = Fill.Horizontal
-        c.gridx = 1;
-        c.gridy = 1;
-        c.gridwidth = 3
-        c.weightx = 1
-        layout(lblAlghoritim) = c
-        lblAlghoritim.xAlignment = Alignment.Left
+      c.anchor = Anchor.East
+      c.fill = Fill.None
+      c.gridx = 0;
+      c.gridy = 1;
+      c.weightx = 0
+      layout(new Label("Alghortim:") {
+        font = font.deriveFont(Font.BOLD)
+      }) = c
 
-      }, Position.North)
+      c.anchor = Anchor.West
+      c.fill = Fill.Horizontal
+      c.gridx = 1;
+      c.gridy = 1;
+      c.weightx = 1
+      c.gridwidth = 3
+      layout(lblAlghoritim) = c
+      lblAlghoritim.xAlignment = Alignment.Left
+/*
+      c.anchor = Anchor.Center
+      c.fill = Fill.Both
+      c.gridx = 0;
+      c.gridy = 2;
+      c.weightx = 1
+      c.gridwidth = 4
+      layout() = c
+*/
+    }
+
+    val controlComponent = new GridPanel(1, 3) {
+      contents += (SudokuApp.this.btnAction, SudokuApp.this.btnPuzzle, SudokuApp.this.btnClean)
+      hGap = 2
+    }
+
+    val panel1 = new BorderPanel {
+      add(viewComponent, Position.North)
       add(SudokuApp.this.board, Position.Center)
-      add(new GridPanel(1, 3) {
-        contents += (SudokuApp.this.btnAction, SudokuApp.this.btnPuzzle, SudokuApp.this.btnClean)
-        hGap = 2
-      }, Position.South)
-      add(new BoxPanel(Orientation.Vertical) {
-        contents += (new Label("Guesses Values"), new ScrollPane(SudokuApp.this.tblGuesses))
-      }, Position.East)
+      add(controlComponent, Position.South)
+    }
+    
+    contents = new BorderPanel {
+      add(panel1, Position.Center)
+      add(guessesComponent, Position.East)
+      //      add(new BorderPanel {
+      //        add(new Label("Guesses Values"), Position.North)
+      //        add(new ScrollPane(SudokuApp.this.tblGuesses), Position.Center)
+      //      }, Position.East)
     }
     preferredSize = new Dimension(300, 400)
     resizable = true
