@@ -10,6 +10,6 @@ class FindBySector extends SudokuAlghoritim {
     this.solveCells(puzzle, puzzle.getSector(sector))
   }).exists(b => b)
 
-  def description = "Solving analizing sector cells"
+  def description = "Sector cells"
 
 }
