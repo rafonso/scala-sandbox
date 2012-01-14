@@ -42,6 +42,8 @@ import sudoku.SudokuPuzzleIteractionEvent
 import sudoku.SudokuType
 import scala.swing.Separator
 import java.awt.Font
+import scala.swing.ComboBox
+import scala.swing.event.SelectionChanged
 
 /**
  * @author rafael
@@ -104,6 +106,11 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
     enabled = false
     mnemonic = Key.C
   }
+  val lblInterval = new Label("Interval (ms)") {
+    xAlignment = Alignment.Right
+    font = font.deriveFont(Font.BOLD)
+  }
+  val cmbInterval = new ComboBox(List(0, 1, 5, 10, 50, 100))
   val tblGuesses = new Table {
     model = new GuessTableModel
     preferredViewportSize = new Dimension(120, 100)
@@ -120,7 +127,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
   var t0: Long = _
 
   private def init {
-    super.listenTo(this.btnAction, this.btnPuzzle, this.btnClean)
+    super.listenTo(this.btnAction, this.btnPuzzle, this.btnClean, this.cmbInterval.selection)
 
     reactions += {
       case ButtonClicked(`btnAction`) if (this.board.isEmpty)  => Dialog.showMessage(null, "Values not defined", "Sudoku", Message.Error)
@@ -128,6 +135,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
       case ButtonClicked(`btnPuzzle`)                          => this.openPuzzleDialog
       case ButtonClicked(`btnClean`)                           => this.cleanBoard
       case PuzzleDialogClosed(Some(text))                      => this.fillBoard(text.trim, (btnPuzzle.text == NewPuzzleTitle))
+      case SelectionChanged(`cmbInterval`)                     => this.board.setTimeInterval(this.cmbInterval.selection.item)
     }
   }
 
@@ -187,12 +195,12 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
   def top = new MainFrame {
 
     val guessesComponent = new ScrollPane(SudokuApp.this.tblGuesses) {
-        border = Swing.TitledBorder(Swing.EtchedBorder, "Guesses Values")
-        preferredSize.width = 120
-        minimumSize.width = 120
-        verticalScrollBarPolicy = BarPolicy.Never
-      }
-    
+      border = Swing.TitledBorder(Swing.EtchedBorder, "Guesses Values")
+      preferredSize.width = 120
+      minimumSize.width = 120
+      verticalScrollBarPolicy = BarPolicy.Never
+    }
+
     val viewComponent = new GridBagPanel {
       val c = new Constraints
       c.insets = new Insets(5, 5, 5, 5)
@@ -248,7 +256,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
       c.gridwidth = 3
       layout(lblAlghoritim) = c
       lblAlghoritim.xAlignment = Alignment.Left
-/*
+      /*
       c.anchor = Anchor.Center
       c.fill = Fill.Both
       c.gridx = 0;
@@ -259,24 +267,19 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
 */
     }
 
-    val controlComponent = new GridPanel(1, 3) {
-      contents += (SudokuApp.this.btnAction, SudokuApp.this.btnPuzzle, SudokuApp.this.btnClean)
+    val controlComponent = new GridPanel(2, 3) {
+      contents += (SudokuApp.this.btnAction, SudokuApp.this.btnPuzzle, SudokuApp.this.btnClean, SudokuApp.this.lblInterval, SudokuApp.this.cmbInterval)
       hGap = 2
+      vGap = 2
     }
 
-    val panel1 = new BorderPanel {
-      add(viewComponent, Position.North)
-      add(SudokuApp.this.board, Position.Center)
-      add(controlComponent, Position.South)
-    }
-    
     contents = new BorderPanel {
-      add(panel1, Position.Center)
+      add(new BorderPanel {
+        add(viewComponent, Position.North)
+        add(SudokuApp.this.board, Position.Center)
+        add(controlComponent, Position.South)
+      }, Position.Center)
       add(guessesComponent, Position.East)
-      //      add(new BorderPanel {
-      //        add(new Label("Guesses Values"), Position.North)
-      //        add(new ScrollPane(SudokuApp.this.tblGuesses), Position.Center)
-      //      }, Position.East)
     }
     preferredSize = new Dimension(300, 400)
     resizable = true
@@ -294,7 +297,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
       }
       case (_: SudokuPuzzle, RunningEvent(RunningState.Solved)) => {
         this.btnAction.enabled = false
-        //        this.btnClean.enabled = true
+        this.btnClean.enabled = true
         this.btnPuzzle.enabled = true
         this.btnPuzzle.text = NewPuzzleTitle
       }

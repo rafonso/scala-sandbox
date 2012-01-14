@@ -39,6 +39,10 @@ class Board extends GridPanel(9, 9) {
     this.cells.foreach(_.reInitCell)
     this.puzz = SudokuPuzzle(cells.map(_.cell).toList)
   }
+  
+  def setTimeInterval(time: Int) {
+    cells.foreach(_.timePause = time)
+  }
 
   this.init()
 }
