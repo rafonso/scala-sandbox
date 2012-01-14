@@ -165,7 +165,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
     this.refreshTableGuess(Seq.empty)
   }
 
-  def refreshTableGuess(guesses: Seq[Cell]) = tblGuesses.model.asInstanceOf[GuessTableModel].updateTable(board.puzzle.guessesCells)
+  def refreshTableGuess(guesses: Seq[Cell]) = tblGuesses.model.asInstanceOf[GuessTableModel].updateTable(guesses)
 
   private def fillBoard(text: String, reNewPuzzle: Boolean) {
     if (reNewPuzzle) {
