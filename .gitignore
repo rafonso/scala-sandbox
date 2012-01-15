@@ -35,3 +35,4 @@ sandbox/.manager/*.scala
 scala-react/
 mirzov-BrightStat-ee3e475/
 sudoku/build/
+sudoku/src/sudoku/swing/*.tmp

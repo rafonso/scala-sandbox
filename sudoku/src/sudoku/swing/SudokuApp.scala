@@ -131,9 +131,13 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
     super.listenTo(this.btnAction, this.btnPuzzle, this.btnClean, this.cmbInterval.selection)
 
     reactions += {
-      case ButtonClicked(`btnAction`) if (this.board.isEmpty)       => Dialog.showMessage(null, "Values not defined", "Sudoku", Message.Error)
-      case ButtonClicked(`btnAction`) if (!this.board.isEmpty)      => this.run
-      case ButtonClicked(`btnPuzzle`)                               => this.openPuzzleDialog
+      case ButtonClicked(`btnAction`) if (this.board.isEmpty)                 => Dialog.showMessage(null, "Values not defined", "Sudoku", Message.Error)
+      case ButtonClicked(`btnAction`) if (!this.board.isEmpty)                => this.run
+      case ButtonClicked(`btnPuzzle`) if (this.btnPuzzle.text == PuzzleTitle) => this.openPuzzleDialog
+      case ButtonClicked(`btnPuzzle`) if (this.btnPuzzle.text == NewPuzzleTitle) => {
+        this.cleanBoard
+        this.openPuzzleDialog
+      }
       case ButtonClicked(`btnClean`)                                => this.cleanBoard
       case PuzzleDialogClosed(Some(text))                           => this.fillBoard(text.trim, (btnPuzzle.text == NewPuzzleTitle))
       case SelectionChanged(`cmbInterval`) if (this.worker != null) => this.worker.pauseTime = this.cmbInterval.selection.item
@@ -145,6 +149,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
     puzzle.subscribe(this)
 
     this.worker = new SudokuWorker(puzzle, this.cmbInterval.selection.item)
+    this.worker.solver.subscribe(this)
 
     worker.start()
   }
@@ -286,19 +291,19 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
         this.btnAction.enabled = false
         this.btnClean.enabled = false
         this.btnPuzzle.enabled = false
-        this.board.cleanCellsColor 
+        this.board.cleanCellsColor
       }
       case (_: SudokuPuzzle, RunningEvent(RunningState.Solved)) => {
         this.btnAction.enabled = false
         this.btnClean.enabled = true
         this.btnPuzzle.enabled = true
         this.btnPuzzle.text = NewPuzzleTitle
-        this.board.cleanCellsColor 
+        this.board.cleanCellsColor
       }
       case (puzzle: SudokuPuzzle, SudokuPuzzleIteractionEvent) => {
         this.lblIteractions.text = "%,4d".format(puzzle.getIteraction)
         this.lblTime.text = "%,10d".format((System.currentTimeMillis() - t0))
-        this.board.cleanCellsColor 
+        this.board.cleanCellsColor
       }
       case (_, ChangeAlghoritimEvent(description)) => this.lblAlghoritim.text = description
       case (_, GuessValueTryingEvent(guessCell))   => this.refreshTableGuess(board.puzzle.guessesCells)
