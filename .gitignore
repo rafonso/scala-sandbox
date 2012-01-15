@@ -34,3 +34,4 @@ sandbox/.manager/*.java
 sandbox/.manager/*.scala
 scala-react/
 mirzov-BrightStat-ee3e475/
+sudoku/build/
