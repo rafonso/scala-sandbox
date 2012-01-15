@@ -5,7 +5,7 @@ package sudoku
 
 /**
  * Basic traits for Events.
- * 
+ *
  * @author rafael
  *
  */
@@ -32,7 +32,7 @@ case object CellStatusChanged extends CellEvent
 
 /**
  * Indicates when a Cell is being evaluated or not.
- * 
+ *
  * @param evaluated IF a Cell is evaluated or not.
  */
 case class CellEvaluated(evaluated: Boolean) extends CellEvent
@@ -47,12 +47,20 @@ case class CellEvaluated(evaluated: Boolean) extends CellEvent
 sealed trait SudokuSolverEvent extends SudokuEvent
 
 /**
- * Indicates a event ocurred in 
+ * Indicates a event ocurred in
  */
 case class CicleEvent(puzzle: SudokuPuzzle, cellsSolvedInCicle: Boolean) extends SudokuSolverEvent
 
 /**
- * 
+ * Indicates that a Cell group is being evaluated or not more evaluated.
+ *
+ * @param evaluatedCells Evaluated Cells.
+ * @param evaluated If these cells is being evaluated or not more evaluated.
+ */
+case class CellGroupEvaluated(evaluatedCells: List[Cell], evaluated: Boolean) extends SudokuEvent
+
+/**
+ *
  */
 case class GuessValueTryingEvent(guessCell: Cell) extends SudokuSolverEvent
 case class GuessValueFailedEvent(guessCell: Cell) extends SudokuSolverEvent
@@ -72,7 +80,7 @@ case class ChangeAlghoritimEvent(alghoritimDescription: String) extends SudokuSo
 sealed trait SudokuPuzzleEvent extends SudokuEvent
 
 /**
- * 
+ *
  */
 case object SudokuPuzzleIteractionEvent extends SudokuPuzzleEvent
 

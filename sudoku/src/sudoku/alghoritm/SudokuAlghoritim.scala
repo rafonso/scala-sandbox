@@ -1,12 +1,13 @@
 package sudoku.alghoritm
 
 import scala.annotation.tailrec
-
 import sudoku.Cell
 import sudoku.PendentCell
 import sudoku.SudokuPuzzle
+import sudoku.SudokuType
+import sudoku.CellGroupEvaluated
 
-trait SudokuAlghoritim {
+trait SudokuAlghoritim extends SudokuType {
 
   @tailrec
   private def solve(puzzle: SudokuPuzzle, hadOneCicleSolvedAtLeast: Boolean): Boolean = {
@@ -20,7 +21,10 @@ trait SudokuAlghoritim {
     }
   }
 
-  private def prepareEvaluatedCells(cells: List[Cell], evaluated: Boolean) = cells.foreach(_.evaluated = evaluated)
+  protected def prepareEvaluatedCells(cells: List[Cell], evaluated: Boolean) {
+    super.publish(new CellGroupEvaluated(cells, evaluated))
+    cells.foreach(_.evaluated = evaluated)
+  }
 
   protected class CellPendenstValues(val cell: Cell, val pendentValues: Seq[Int])
 

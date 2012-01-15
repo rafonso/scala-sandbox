@@ -7,7 +7,7 @@ import sudoku.SudokuPuzzle
 class FindByPendentNumbersCells extends SudokuAlghoritim {
 
   private def solveCell(puzzle: SudokuPuzzle, cell: Cell): Boolean = {
-    cell.evaluated = true
+    super.prepareEvaluatedCells(List(cell), true)
 
     val result = puzzle.getPendentsNumbersFromCell(cell) match {
       case x :: Nil => this.fillCell(cell, x, puzzle.lastGuess)
@@ -18,7 +18,7 @@ class FindByPendentNumbersCells extends SudokuAlghoritim {
       case _ => false
     }
 
-    cell.evaluated = false
+    super.prepareEvaluatedCells(List(cell), false)
     result
   }
 

@@ -17,14 +17,13 @@ import sudoku.SudokuEvent
 import sudoku.SudokuType
 import sudoku.RunningState
 import sudoku.console.SudokuLog
+import sudoku.CellGroupEvaluated
 
 class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEvent, SudokuType] with SudokuLog {
 
   val label = new Label
 
   val cell = new Cell(row, col)
-
-  private var pauseTime = 0
 
   private val tamanho = 14
   private val NormalFont = new Font(this.label.font.getName(), Font.PLAIN, tamanho)
@@ -55,12 +54,7 @@ class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEven
   def notify(pub: SudokuType, evt: SudokuEvent) {
     (pub, evt) match {
       case (Cell(`row`, `col`, _, _, _), CellEvaluated(true)) => this.background = FundoAvaliado
-      case (Cell(`row`, `col`, _, _, _), CellEvaluated(false)) => {
-        if (this.pauseTime > 0) {
-          Thread.sleep(this.pauseTime)
-        }
-        this.background = FundoNormal
-      }
+      case (Cell(`row`, `col`, _, _, _), CellEvaluated(false)) => this.background = FundoNormal
       case (Cell(`row`, `col`, Some(x), _, _), CellValueChanged) => this.label.text = x.toString()
       case (Cell(`row`, `col`, None, _, _), CellValueChanged) => this.label.text = Empty
       case (Cell(`row`, `col`, _, CellStatus.Empty, _), CellStatusChanged) => this.label.font = NormalFont
@@ -80,10 +74,6 @@ class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEven
     this.cell.value = None
     this.cell.guessCell = None
   }
-
-  def timePause = this.pauseTime
-
-  def timePause_=(t: Int) = this.pauseTime = t
 
   init()
 }

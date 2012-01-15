@@ -126,16 +126,18 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
 
   var t0: Long = _
 
+  var worker: SudokuWorker = _
+
   private def init {
     super.listenTo(this.btnAction, this.btnPuzzle, this.btnClean, this.cmbInterval.selection)
 
     reactions += {
-      case ButtonClicked(`btnAction`) if (this.board.isEmpty)  => Dialog.showMessage(null, "Values not defined", "Sudoku", Message.Error)
-      case ButtonClicked(`btnAction`) if (!this.board.isEmpty) => this.run
-      case ButtonClicked(`btnPuzzle`)                          => this.openPuzzleDialog
-      case ButtonClicked(`btnClean`)                           => this.cleanBoard
-      case PuzzleDialogClosed(Some(text))                      => this.fillBoard(text.trim, (btnPuzzle.text == NewPuzzleTitle))
-      case SelectionChanged(`cmbInterval`)                     => this.board.setTimeInterval(this.cmbInterval.selection.item)
+      case ButtonClicked(`btnAction`) if (this.board.isEmpty)       => Dialog.showMessage(null, "Values not defined", "Sudoku", Message.Error)
+      case ButtonClicked(`btnAction`) if (!this.board.isEmpty)      => this.run
+      case ButtonClicked(`btnPuzzle`)                               => this.openPuzzleDialog
+      case ButtonClicked(`btnClean`)                                => this.cleanBoard
+      case PuzzleDialogClosed(Some(text))                           => this.fillBoard(text.trim, (btnPuzzle.text == NewPuzzleTitle))
+      case SelectionChanged(`cmbInterval`) if (this.worker != null) => this.worker.pauseTime = this.cmbInterval.selection.item
     }
   }
 
@@ -143,7 +145,8 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
     val puzzle = this.board.puzzle
     puzzle.subscribe(this)
 
-    val worker = new SudokuWorker(puzzle)
+    this.worker = new SudokuWorker(puzzle, this.cmbInterval.selection.item)
+    
     worker.solver.subscribe(this)
 
     worker.start()

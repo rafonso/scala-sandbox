@@ -2,6 +2,7 @@ package sudoku
 
 import scala.annotation.tailrec
 import scala.collection.mutable.Publisher
+import scala.collection.mutable.Subscriber
 
 class SudokuSolver(originalPuzzle: SudokuPuzzle) extends SudokuType {
 
@@ -15,6 +16,22 @@ class SudokuSolver(originalPuzzle: SudokuPuzzle) extends SudokuType {
   val byRowSolver = new FindByRow
   val byColSolver = new FindByCol
   val bySectorSolver = new FindBySector
+
+  private val alghoritmSubscriber = new Subscriber[SudokuEvent, SudokuType] {
+    def notify(pub: SudokuType, evt: SudokuEvent) {
+      evt match {
+        case e: CellGroupEvaluated => SudokuSolver.this.publish(e);
+        case _                     =>
+      }
+    }
+  }
+
+  private def init() {
+    byCellSolver.subscribe(this.alghoritmSubscriber.asInstanceOf[byCellSolver.Sub])
+    byRowSolver.subscribe(this.alghoritmSubscriber.asInstanceOf[byRowSolver.Sub])
+    byColSolver.subscribe(this.alghoritmSubscriber.asInstanceOf[byColSolver.Sub])
+    bySectorSolver.subscribe(this.alghoritmSubscriber.asInstanceOf[bySectorSolver.Sub])
+  }
 
   private def changeRunningState(newState: RunningState.Value, puzzle: SudokuPuzzle) {
     super.runningState = newState
@@ -104,5 +121,6 @@ class SudokuSolver(originalPuzzle: SudokuPuzzle) extends SudokuType {
     }
   }
 
+  init()
 }
 
