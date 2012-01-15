@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build-jar" name="sudoku">
+
+	<property name="SCALA_LIB_HOME" value="C:/java/typesafe-stack/lib" />
+	<property name="BIN_DIR" value="./bin" />
+	<property name="OUTPUT_DIR" value="build" />
+	<property name="OUTPUT_FILE" value="sudoku.jar" />
+	<property name="scala.core.lib" value="scala-library.jar" />
+	<property name="scala.swing.lib" value="scala-swing.jar" />
+
+
+	<!-- ================================= 
+          target: clean-jar              
+         ================================= -->
+	<target name="clean-jar" description="Clean Jar files">
+		<delete dir="${OUTPUT_DIR}">
+		</delete>
+	</target>
+
+
+	<!-- ================================= 
+          target: build-jar              
+         ================================= -->
+	<target name="build-jar" description="Creates a executable Jar file">
+		<copy todir="${OUTPUT_DIR}">
+			<fileset dir="${SCALA_LIB_HOME}">
+				<include name="${scala.core.lib}" />
+				<include name="${scala.swing.lib}" />
+			</fileset>
+		</copy>
+		<jar destfile="${OUTPUT_DIR}/${OUTPUT_FILE}" basedir="${BIN_DIR}/">
+			<manifest>
+				<attribute name="Main-Class" value="sudoku.swing.SudokuApp" />
+				<attribute name="Class-Path" value="${scala.core.lib} ${scala.swing.lib}" />
+			</manifest>
+		</jar>
+		<echo file="${OUTPUT_DIR}/sudoku.bat" append="false">@ECHO OFF
+java -jar ${OUTPUT_FILE}</echo>
+	</target>
+
+
+</project>
