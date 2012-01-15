@@ -3,30 +3,33 @@
  */
 package sudoku.swing
 
+import java.awt.Font
 import java.awt.Insets
+
 import scala.collection.mutable.Subscriber
 import scala.swing.BorderPanel.Position
 import scala.swing.Dialog.Message
 import scala.swing.GridBagPanel.Anchor
 import scala.swing.GridBagPanel.Fill
+import scala.swing.ScrollPane.BarPolicy
 import scala.swing.event.ButtonClicked
 import scala.swing.event.Key
+import scala.swing.event.SelectionChanged
 import scala.swing.Dimension
 import scala.swing.Alignment
 import scala.swing.BorderPanel
-import scala.swing.BoxPanel
 import scala.swing.Button
-import scala.swing.Swing
+import scala.swing.ComboBox
 import scala.swing.Dialog
 import scala.swing.GridBagPanel
 import scala.swing.GridPanel
 import scala.swing.Label
 import scala.swing.MainFrame
-import scala.swing.Orientation
 import scala.swing.ScrollPane
-import scala.swing.ScrollPane._
 import scala.swing.SimpleSwingApplication
+import scala.swing.Swing
 import scala.swing.Table
+
 import javax.swing.table.AbstractTableModel
 import javax.swing.UIManager
 import sudoku.Cell
@@ -40,10 +43,6 @@ import sudoku.SudokuEvent
 import sudoku.SudokuPuzzle
 import sudoku.SudokuPuzzleIteractionEvent
 import sudoku.SudokuType
-import scala.swing.Separator
-import java.awt.Font
-import scala.swing.ComboBox
-import scala.swing.event.SelectionChanged
 
 /**
  * @author rafael
@@ -146,8 +145,6 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
     puzzle.subscribe(this)
 
     this.worker = new SudokuWorker(puzzle, this.cmbInterval.selection.item)
-    
-    worker.solver.subscribe(this)
 
     worker.start()
   }
@@ -259,15 +256,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
       c.gridwidth = 3
       layout(lblAlghoritim) = c
       lblAlghoritim.xAlignment = Alignment.Left
-      /*
-      c.anchor = Anchor.Center
-      c.fill = Fill.Both
-      c.gridx = 0;
-      c.gridy = 2;
-      c.weightx = 1
-      c.gridwidth = 4
-      layout() = c
-*/
+
     }
 
     val controlComponent = new GridPanel(2, 3) {
@@ -293,22 +282,25 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
   def notify(pub: SudokuType, evt: SudokuEvent) {
     (pub, evt) match {
       case (_: SudokuPuzzle, RunningEvent(RunningState.Runnning)) => {
+        this.t0 = System.currentTimeMillis()
         this.btnAction.enabled = false
         this.btnClean.enabled = false
         this.btnPuzzle.enabled = false
-        this.t0 = System.currentTimeMillis()
+        this.board.cleanCellsColor 
       }
       case (_: SudokuPuzzle, RunningEvent(RunningState.Solved)) => {
         this.btnAction.enabled = false
         this.btnClean.enabled = true
         this.btnPuzzle.enabled = true
         this.btnPuzzle.text = NewPuzzleTitle
+        this.board.cleanCellsColor 
       }
       case (puzzle: SudokuPuzzle, SudokuPuzzleIteractionEvent) => {
-        lblIteractions.text = "%,4d".format(puzzle.getIteraction)
-        lblTime.text = "%,10d".format((System.currentTimeMillis() - t0))
+        this.lblIteractions.text = "%,4d".format(puzzle.getIteraction)
+        this.lblTime.text = "%,10d".format((System.currentTimeMillis() - t0))
+        this.board.cleanCellsColor 
       }
-      case (_, ChangeAlghoritimEvent(description)) => lblAlghoritim.text = description
+      case (_, ChangeAlghoritimEvent(description)) => this.lblAlghoritim.text = description
       case (_, GuessValueTryingEvent(guessCell))   => this.refreshTableGuess(board.puzzle.guessesCells)
       case (_, GuessValueFailedEvent(guessCell))   => this.refreshTableGuess(board.puzzle.guessesCells)
       case (_, _)                                  =>

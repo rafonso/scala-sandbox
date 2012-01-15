@@ -39,5 +39,9 @@ class Board extends GridPanel(9, 9) {
     this.puzz = SudokuPuzzle(cells.map(_.cell).toList)
   }
   
+  def cleanCellsColor {
+    this.cells.foreach(_.cleanColor)
+  }
+  
   this.init()
 }

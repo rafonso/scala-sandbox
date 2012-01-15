@@ -18,6 +18,7 @@ import sudoku.SudokuType
 import sudoku.RunningState
 import sudoku.console.SudokuLog
 import sudoku.CellGroupEvaluated
+import sudoku.CicleEvent
 
 class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEvent, SudokuType] with SudokuLog {
 
@@ -32,6 +33,9 @@ class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEven
 
   private val FundoNormal = this.background
   private val FundoAvaliado = Color.CYAN
+
+  private val normalColor = this.label.foreground
+  private val changedColor = Color.BLUE
 
   private def init() {
     this.label.text = Empty
@@ -53,9 +57,13 @@ class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEven
 
   def notify(pub: SudokuType, evt: SudokuEvent) {
     (pub, evt) match {
-      case (Cell(`row`, `col`, _, _, _), CellEvaluated(true)) => this.background = FundoAvaliado
+      case (Cell(`row`, `col`, _, _, _), CellEvaluated(true))  => this.background = FundoAvaliado
       case (Cell(`row`, `col`, _, _, _), CellEvaluated(false)) => this.background = FundoNormal
-      case (Cell(`row`, `col`, Some(x), _, _), CellValueChanged) => this.label.text = x.toString()
+      case (Cell(`row`, `col`, Some(x), _, _), CellValueChanged) => {
+        this.label.text = x.toString()
+        this.label.foreground =
+          if (cell.runningState == RunningState.Runnning) changedColor else normalColor
+      }
       case (Cell(`row`, `col`, None, _, _), CellValueChanged) => this.label.text = Empty
       case (Cell(`row`, `col`, _, CellStatus.Empty, _), CellStatusChanged) => this.label.font = NormalFont
       case (Cell(`row`, `col`, _, CellStatus.Original, _), CellStatusChanged) => this.label.font = OriginalFont
@@ -73,6 +81,11 @@ class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEven
     this.cell.status = CellStatus.Empty
     this.cell.value = None
     this.cell.guessCell = None
+    this.label.foreground = normalColor
+  }
+
+  def cleanColor {
+    this.label.foreground = normalColor
   }
 
   init()
