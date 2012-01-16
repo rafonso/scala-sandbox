@@ -4,6 +4,15 @@ import scala.annotation.tailrec
 import scala.collection.mutable.Publisher
 import scala.collection.mutable.Subscriber
 
+/**
+ * Indicates that a Cell group is being evaluated or not more evaluated.
+ *
+ * @param evaluatedCells Evaluated Cells.
+ * @param evaluated If these cells is being evaluated or not more evaluated.
+ */
+case class CellGroupEvaluated(evaluatedCells: List[Cell], evaluated: Boolean) extends SudokuEvent
+
+
 ////////////////////
 // SOLVER EVENTS
 ////////////////////
@@ -14,17 +23,12 @@ import scala.collection.mutable.Subscriber
 sealed trait SudokuSolverEvent extends SudokuEvent
 
 /**
- * Indicates a event ocurred in
+ * Indicates that a all alghoritms was tried and they will be tried again in a new cicle.
+ *
+ * @param puzzle Puzzle being solved
+ * @param cellsSolvedInCicle If at least a Cell was filled in last cicle.
  */
 case class CicleEvent(puzzle: SudokuPuzzle, cellsSolvedInCicle: Boolean) extends SudokuSolverEvent
-
-/**
- * Indicates that a Cell group is being evaluated or not more evaluated.
- *
- * @param evaluatedCells Evaluated Cells.
- * @param evaluated If these cells is being evaluated or not more evaluated.
- */
-case class CellGroupEvaluated(evaluatedCells: List[Cell], evaluated: Boolean) extends SudokuEvent
 
 /**
  * Indicates that it is trying a guess value for a Cell.

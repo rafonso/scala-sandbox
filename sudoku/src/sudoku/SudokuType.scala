@@ -7,7 +7,9 @@ import scala.collection.mutable.Publisher
 ////////////////////
 
 /**
- * Indicates a change in Running State in a SudokuTYpe.
+ * Indicates a change in Running State in a SudokuType.
+ * 
+ * @param runningState New Running State.
  */
 case class RunningEvent(runningState: RunningState.Value) extends SudokuEvent
 
