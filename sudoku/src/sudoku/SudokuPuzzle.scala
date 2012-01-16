@@ -7,6 +7,20 @@ import scala.collection.mutable.Set
 import scala.collection.mutable.Stack
 import scala.deprecated
 
+////////////////////
+// PUZZLE EVENTS
+////////////////////
+
+/**
+ * Represents a Event that ocurred in a Puzzle.
+ */
+sealed trait SudokuPuzzleEvent extends SudokuEvent
+
+/**
+ * Indicates a new puzzle itteraction.
+ */
+case object SudokuPuzzleIteractionEvent extends SudokuPuzzleEvent
+
 case class SudokuPuzzle(val matrix: List[Cell], var iteraction: Int = 0, val guessesCells: Stack[Cell] = new Stack[Cell]) extends SudokuType {
   assert(matrix.size == 81)
 

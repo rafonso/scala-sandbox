@@ -2,6 +2,35 @@ package sudoku
 
 import scala.collection.mutable.Publisher
 
+////////////////////
+// CELL EVENTS
+////////////////////
+
+/**
+ * Represents a Event that ocurred in a Cell.
+ */
+sealed trait CellEvent extends SudokuEvent
+
+/**
+ * Indicates when a Cell Value changed.
+ */
+case object CellValueChanged extends CellEvent
+
+/**
+ * Indicates when a Cell Status changes.
+ */
+case object CellStatusChanged extends CellEvent
+
+/**
+ * Indicates when a Cell is being evaluated or not.
+ *
+ * @param evaluated IF a Cell is evaluated or not.
+ */
+case class CellEvaluated(evaluated: Boolean) extends CellEvent
+
+/**
+ * Represents a Cell Status.
+ */
 object CellStatus extends Enumeration {
 
   type CellStatus = Value

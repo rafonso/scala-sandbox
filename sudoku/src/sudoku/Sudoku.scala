@@ -4,6 +4,49 @@ import scala.annotation.tailrec
 import scala.collection.mutable.Publisher
 import scala.collection.mutable.Subscriber
 
+////////////////////
+// SOLVER EVENTS
+////////////////////
+
+/**
+ * Represents a Event that ocurred while solving a Puzzle.
+ */
+sealed trait SudokuSolverEvent extends SudokuEvent
+
+/**
+ * Indicates a event ocurred in
+ */
+case class CicleEvent(puzzle: SudokuPuzzle, cellsSolvedInCicle: Boolean) extends SudokuSolverEvent
+
+/**
+ * Indicates that a Cell group is being evaluated or not more evaluated.
+ *
+ * @param evaluatedCells Evaluated Cells.
+ * @param evaluated If these cells is being evaluated or not more evaluated.
+ */
+case class CellGroupEvaluated(evaluatedCells: List[Cell], evaluated: Boolean) extends SudokuEvent
+
+/**
+ * Indicates that it is trying a guess value for a Cell.
+ *
+ * @param guessCell Cell with guess value filled.
+ */
+case class GuessValueTryingEvent(guessCell: Cell) extends SudokuSolverEvent
+
+/**
+ * Indicates that it is a guess value for a Cell was failed.
+ *
+ * @param guessCell Cell with guess value filled.
+ */
+case class GuessValueFailedEvent(guessCell: Cell) extends SudokuSolverEvent
+
+/**
+ * Indicates a solver alghoritm change.
+ *
+ * @param alghoritimDescription self explicative.
+ */
+case class ChangeAlghoritimEvent(alghoritimDescription: String) extends SudokuSolverEvent
+
 class SudokuSolver(originalPuzzle: SudokuPuzzle) extends SudokuType {
 
   type Pub <: SudokuSolver

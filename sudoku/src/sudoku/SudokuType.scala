@@ -2,6 +2,16 @@ package sudoku
 
 import scala.collection.mutable.Publisher
 
+////////////////////
+// RUNNING EVENTS
+////////////////////
+
+/**
+ * Indicates a change in Running State in a SudokuTYpe.
+ */
+case class RunningEvent(runningState: RunningState.Value) extends SudokuEvent
+
+
 object RunningState extends Enumeration {
 
   /**
