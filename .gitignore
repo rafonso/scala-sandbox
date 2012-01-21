@@ -36,3 +36,7 @@ scala-react/
 mirzov-BrightStat-ee3e475/
 sudoku/build/
 sudoku/src/sudoku/swing/*.tmp
+scalafx/
+sudoku/.idea/
+sudoku/sudoku.iml
+sudoku/src/sudoku/swing/images/
