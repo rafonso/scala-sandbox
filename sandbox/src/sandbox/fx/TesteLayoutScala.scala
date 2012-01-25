@@ -40,19 +40,19 @@ object TesteLayoutScala extends JFXApp {
     val pane = new BorderPane()
 
     pane.top = this.buttonTop
-//    jfxBorderPane.setMargin(this.buttonTop, new jfxgInsets(2.5, 1, 2.5, 2.5))
+    //    jfxBorderPane.setMargin(this.buttonTop, new jfxgInsets(2.5, 1, 2.5, 2.5))
 
     pane.center = this.buttonCenter
-//    jfxBorderPane.setMargin(buttonCenter, new jfxgInsets(2.5, 2.5, 2.5, 2.5));
+    //    jfxBorderPane.setMargin(buttonCenter, new jfxgInsets(2.5, 2.5, 2.5, 2.5));
 
     pane.bottom = this.buttonBottom
-//    jfxBorderPane.setMargin(buttonBottom, new jfxgInsets(2.5, 1, 1, 1));
+    //    jfxBorderPane.setMargin(buttonBottom, new jfxgInsets(2.5, 1, 1, 1));
 
     pane.left = this.buttonLeft
-//    jfxBorderPane.setMargin(buttonLeft, new jfxgInsets(2.5, 2.5, 2.5, 1));
+    //    jfxBorderPane.setMargin(buttonLeft, new jfxgInsets(2.5, 2.5, 2.5, 1));
 
     pane.right = this.buttonRight
-//    jfxBorderPane.setMargin(buttonRight, new jfxgInsets(2.5, 1, 2.5, 2.5));
+    //    jfxBorderPane.setMargin(buttonRight, new jfxgInsets(2.5, 1, 2.5, 2.5));
 
     pane
   }
@@ -69,29 +69,15 @@ object TesteLayoutScala extends JFXApp {
       }
     }
 
-    stage.scene.get().heightProperty.addListener(new jfxbv.ChangeListener[Number] {
-      def changed(observable: jfxbv.ObservableValue[_ <: Number],
-        oldValue: Number, newValue: Number) {
-        val newHeight = newValue.doubleValue() - (
-          buttonTop.height.get() + // buttonTop.margin.getBottom + buttonTop.margin.top +
-          buttonBottom.height.get() // buttonBottom.margin.top + buttonBottom.margin.bottom
-          )
-        buttonCenter.prefHeight = newHeight
-        buttonLeft.prefHeight = newHeight
-        buttonRight.prefHeight = newHeight
-      }
-    })
+    val jfxScene = stage.scene.get()
 
-    stage.scene.get().widthProperty.addListener(new jfxbv.ChangeListener[Number] {
-      def changed(observable: jfxbv.ObservableValue[_ <: Number],
-        oldValue: Number, newValue: Number) {
-        val newWidth = newValue.doubleValue() - (buttonLeft.width.get() + buttonRight.width.get())
-        buttonCenter.prefWidth = newWidth
-      }
-    })
-
-    this.buttonTop.prefWidth.bind(stage.scene.get().widthProperty())
-    this.buttonBottom.prefWidth.bind(stage.scene.get().widthProperty())
+    val heightBinding = jfxScene.heightProperty().subtract(buttonTop.height.add(buttonBottom.height))
+    this.buttonLeft.prefHeight.bind(heightBinding)
+    this.buttonRight.prefHeight.bind(heightBinding)
+    this.buttonCenter.prefHeight.bind(heightBinding)
+    this.buttonCenter.prefWidth.bind(jfxScene.widthProperty.subtract(buttonLeft.width.add(buttonRight.width)))
+    this.buttonTop.prefWidth.bind(jfxScene.widthProperty)
+    this.buttonBottom.prefWidth.bind(jfxScene.widthProperty)
 
     stage.sizeToScene()
     stage.centerOnScreen()
