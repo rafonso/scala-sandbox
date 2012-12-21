@@ -2,16 +2,11 @@ package sudoku.swing
 
 import java.awt.Dimension
 import java.awt.Font
+
+import scala.swing._
 import scala.swing.Dialog.Message
-import scala.swing.event.ButtonClicked
-import scala.swing.event.Event
-import scala.swing.event.Key
-import scala.swing.BorderPanel
-import scala.swing.Button
-import scala.swing.Dialog
-import scala.swing.FlowPanel
-import scala.swing.TextArea
-import scala.swing.Window
+import scala.swing.event._
+
 import sudoku.SudokuPuzzle
 
 case class PuzzleDialogClosed(strPuzzle: Option[String]) extends Event
@@ -42,7 +37,7 @@ class PuzzleDialog(puzzle: SudokuPuzzle) extends Dialog {
       }, BorderPanel.Position.South)
     }
 
-    super.listenTo(btnOk, btnCancel)
+    super.listenTo(btnOk, btnCancel, this.txaPuzzle)
     reactions += {
       case ButtonClicked(`btnOk`) => {
         val concat = """([0-9 ]{9})""".r.findAllIn(txaPuzzle.text).mkString
@@ -56,6 +51,10 @@ class PuzzleDialog(puzzle: SudokuPuzzle) extends Dialog {
       case ButtonClicked(`btnCancel`) => {
         publish(PuzzleDialogClosed(None))
         this.close()
+      }
+      //      case KeyEvent(e) => println(e)
+      case KeyPressed(this.txaPuzzle, char, modifiers, location) => {
+        println(char)
       }
     }
 

@@ -48,7 +48,7 @@ import sudoku.SudokuType
  * @author rafael
  *
  */
-object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, SudokuType] {
+object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, SudokuType] { app =>
 
   // Uses Native L&F
   UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
@@ -199,7 +199,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
 
   def top = new MainFrame {
 
-    val guessesComponent = new ScrollPane(SudokuApp.this.tblGuesses) {
+    val guessesComponent = new ScrollPane(app.tblGuesses) {
       border = Swing.TitledBorder(Swing.EtchedBorder, "Guesses Values")
       preferredSize.width = 120
       minimumSize.width = 120
@@ -265,7 +265,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
     }
 
     val controlComponent = new GridPanel(2, 3) {
-      contents += (SudokuApp.this.btnAction, SudokuApp.this.btnPuzzle, SudokuApp.this.btnClean, SudokuApp.this.lblInterval, SudokuApp.this.cmbInterval)
+      contents += (app.btnAction, app.btnPuzzle, app.btnClean, app.lblInterval, app.cmbInterval)
       hGap = 2
       vGap = 2
     }
@@ -273,7 +273,7 @@ object SudokuApp extends SimpleSwingApplication with Subscriber[SudokuEvent, Sud
     contents = new BorderPanel {
       add(new BorderPanel {
         add(viewComponent, Position.North)
-        add(SudokuApp.this.board, Position.Center)
+        add(app.board, Position.Center)
         add(controlComponent, Position.South)
       }, Position.Center)
       add(guessesComponent, Position.East)

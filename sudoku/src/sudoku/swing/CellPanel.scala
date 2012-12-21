@@ -2,10 +2,12 @@ package sudoku.swing
 
 import java.awt.Color
 import java.awt.Font
+
 import scala.collection.mutable.Subscriber
 import scala.swing.FlowPanel
 import scala.swing.Label
 import scala.swing.Swing
+
 import sudoku.Cell
 import sudoku.CellEvaluated
 import sudoku.CellStatus
@@ -13,12 +15,10 @@ import sudoku.CellStatusChanged
 import sudoku.CellValueChanged
 import sudoku.GuessValueFailedEvent
 import sudoku.GuessValueTryingEvent
+import sudoku.RunningState
 import sudoku.SudokuEvent
 import sudoku.SudokuType
-import sudoku.RunningState
 import sudoku.console.SudokuLog
-import sudoku.CellGroupEvaluated
-import sudoku.CicleEvent
 
 class CellPanel(row: Int, col: Int) extends FlowPanel with Subscriber[SudokuEvent, SudokuType] with SudokuLog {
 

@@ -1,11 +1,11 @@
 package sudoku.alghoritm
-
 import scala.annotation.tailrec
+
 import sudoku.Cell
+import sudoku.CellGroupEvaluated
 import sudoku.PendentCell
 import sudoku.SudokuPuzzle
 import sudoku.SudokuType
-import sudoku.CellGroupEvaluated
 
 trait SudokuAlghoritim extends SudokuType {
 
